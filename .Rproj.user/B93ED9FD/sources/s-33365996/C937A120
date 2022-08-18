@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1660786490348.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1972345566",
+    "id" : "C937A120",
+    "lastKnownWriteTime" : 1660786652,
+    "last_content_update" : 1660786652227,
+    "path" : "C:/Users/Léo/Desktop/TCC/planilhas_imp_R_TCC/tcc160822.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "123,32",
+        "docOutlineVisible" : "0",
+        "scrollLine" : "95"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

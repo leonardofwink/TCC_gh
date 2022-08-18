@@ -1,0 +1,239 @@
+---
+title: "TCC"
+author: "Leonardo Fernandes Wink"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output:
+  html_document: 
+    highlight: haddock
+    number_sections: yes
+    theme: flatly
+    keep_md: true
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+always_allow_html: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+# Instalar os pacotes
+```{r instalar pacotes}
+# install.packges(tidyverse)
+```
+
+## acessar os pacotes
+```{r Acessar os pacotes, message = FALSE, warning = TRUE}
+library(readr)
+library(rmarkdown)
+library(qboxplot)
+library(readxl)
+library(pillar)
+library(dplyr)
+library(tidyverse)
+library(gapminder)
+library(knitr)
+library(kableExtra)
+```
+
+## importando a planilha
+```{r Importando a planilha, message = TRUE, warning = FALSE}
+plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    col_types = cols(Alcalinidade = col_double(), 
+        CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
+        COORD_GEO_LONG_GRAU = col_double(), 
+        DATA_COLETA = col_date(format = "%d/%m/%Y"), 
+        Nitrato = col_double(), Nitrito = col_double(), 
+        SDT = col_double(), SST = col_double(), 
+        `Vazão` = col_double(), `Vazão rio` = col_double()), 
+    locale = locale(date_names = "pt", decimal_mark = ",", 
+        grouping_mark = ""), trim_ws = TRUE)
+```
+
+
+```{r Mostrando os dados, layout="l-body-outset", echo = FALSE}
+# library(rmarkdown)
+# kable(head(plan_wide_19902020),format = "html") %>% 
+#   kable_styling(full_width = FALSE,
+#                 bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+# 
+# paged_table(plan_wide_19902020,
+#             options = list(rows.print = 15,
+#                            cols.print = 10))
+
+```
+
+
+```{r Códigos Git, echo = FALSE}
+# cd myrepo
+# ls
+# head README.md
+# git status
+# git add README.md
+# git commit -m "A commit from my local computer"
+# 
+# cd ..
+# rm -rf myrepo/
+```
+
+
+```{r Aprendendo Git}
+# aprendendo a sincronizar usando esse guia -> 
+# https://happygitwithr-com.translate.goog/push-pull-github.html?_x_tr_sl=auto&_x_tr_tl=pt&_x_tr_hl=pt-BR
+# library(usethis)
+# usethis::create_github_token() criar um código pra acesso e sincronização between R e github
+
+# gitcreds::gitcreds_set() 
+
+# usethis::gh_token_help()
+
+# Como mostrar os dados de um arquivo via Git/GitHub
+# git clone https://github.com/leonardofwink/myrepo.git
+# cd myrepo #acessa a pasta myrepo
+# ls #lista os arquivos da pasta 
+# head README.md #mostra as primeiras observações do arquivo
+
+# Como mostrar os dados de um arquivo via R
+# head(C:/Users/Léo/myrepo/README.md)
+
+# Adicionar uma linha ao README.md e verificar se o Git percebe a mudança
+# echo "A line I wrote on my local computer" >> README.md
+# git status
+## C:\Users\Léo\myrepo>git status
+## On branch main
+## Your branch is up to date with 'origin/main'.
+## 
+## Changes not staged for commit:
+##   (use "git add <file>..." to update what will be committed)
+##   (use "git restore <file>..." to discard changes in working directory)
+##         **modified:   README.md**
+## 
+## no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+
+
+
+
+
+
+
+```{r Gráfico OD, warning=FALSE}
+(testandood <-ggplot(plan_wide_19902020,aes(CODIGO,
+                                           `Oxigênio dissolvido`))+
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0,
+             ymax=2,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=2,
+             ymax=4,
+             alpha=1,
+             fill="#eb5661")+ #classe 4
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=4,
+             ymax=5,
+             alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=5,
+             ymax=6,
+             alpha=1,
+             fill="#70c18c")+ #classe 2
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=6,
+             ymax=Inf,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    stat_boxplot(geom = 'errorbar',
+                 width=0.3,
+                 position = position_dodge(width = 0.65))+
+    geom_boxplot(fill='#F8F8FF',
+                 color="black",
+                 outlier.shape = 8, #se deixar NA fica só o jitter, se não, deixa 1
+                 width= 0.7)+
+    labs(title = "Oxigênio Dissolvido",
+         x="Estação",
+         y="mg/L")+
+    # geom_jitter(width = .05,
+    #             alpha=.2,
+    #             size=1.5,
+    #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0,0)),
+                       breaks = ,
+                       limits = c(0,15))+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                size = 1)+
+    geom_line(aes(color="red"),
+              alpha=.0)+
+    scale_color_manual("Legenda",
+                       guide="legend",
+                       values = c("Classe 1"="#8dcdeb",
+                                  "Classe 2"="#70c18c",
+                                  "Classe 3"="#fcf7ab",
+																	"Classe 4"="#eb5661",
+                                  "Pior Classe"="#ac5079"))+
+    guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+                                                  lwd=c(2,2,2,2,2),
+                                                  shape=c(NA,NA,NA,NA,NA),
+                                                  alpha=1)))+
+    theme(legend.position = "bottom")+
+    theme_classic())
+```
+
+```{r Sumário OD}
+summary(plan_wide_19902020$`Oxigênio dissolvido`)
+```
+
+
+
+
+
+
+
+
+--- 
+---
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

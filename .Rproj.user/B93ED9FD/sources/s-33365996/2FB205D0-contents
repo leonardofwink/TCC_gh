@@ -1,0 +1,113 @@
+---
+title: "RS Água"
+author: "Leonardo Fernandes Wink"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output:
+  html_document:
+    highlight: haddock
+    number_sections: yes
+    theme: flatly
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+always_allow_html: yes
+---
+
+# Instalando pacotes  
+```{r}
+# install.packages("pacman")
+```
+
+o pacote pacman faz a instalação e acessa os pacotes automaticamente  
+
+```{r Pacman} 
+library(pacman)  
+```
+
+pacman::p_load(qboxplot,readxl,pillar,dplyr,tidyverse,gapminder,knitr)
+
+pacman::p_update()  
+
+Geralmente a primeira vez que executa o código acaba demorando um pouco  
+Nas demais vezes só é necessário acessar os pacotes (seja por meio do library() ou do pacman)
+
+## Importante:
+atualizar os pacotes caso estejam desatualizados  
+
+*  não consigo atualizar pq n tenho permissão de adm  
+
+antes de importar o arquivo pro R, verificar qual o limite dos dados:  
+as últimas 8 linhas das planilhas geradas pelo RSÁgua contêm um sumário estatístico  
+definir o range= "A1:AY119"  
+
+caso não funcione o pacote pacman, importar os pacotes individualmente
+```{r Importar pacotes, message = FALSE, warning = FALSE}
+library(qboxplot)
+library(readxl)
+library(pillar)
+library(dplyr)
+library(tidyverse)
+library(gapminder)
+library(knitr)
+library(kableExtra)
+```
+# Definindo o workspace
+Definir onde as planilhas estão armazenadas  
+Essa pasta é, também, o lugar em que os arquivos serão salvos, sejam eles gráficos, Rfiles, scripts, etc..
+
+Opção 1 - Via código:
+```{r Workspace}
+setwd("C:/Users/Léo/Desktop/isa")
+```
+
+Opção 2 - Manualmente: Session > Set Working Directory > Choose Directory
+
+
+## importando 
+```{r Dados, warning = FALSE}
+dados_gravatai_testando <- read_excel("C:/Users/Léo/Desktop/isa/Dados_20220323103746.xlsx", 
+                                      sheet = "Dados_Ajustados", 
+                                      col_types = c("numeric", "text", "numeric",
+                                                    "numeric", "text", "text",
+                                                    "text", "text", "text", "date", 
+                                                    "date", "text", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric"),
+                                      range = "A1:AY119")
+
+
+#library(readr)
+#plan_tcc_19902020 <- read_csv("C:/Users/Léo/Desktop/isa/plan_tcc_19902020.csv", 
+ #   col_types = cols(`87398500` = col_character(), 
+  #      `87398900` = col_character(), `87398950` = col_character(), 
+   #     `87398980` = col_character(), `87405500` = col_character(), 
+    #    `87406900` = col_character(), `87409900` = col_character()), 
+    #locale = locale(date_names = "pt", decimal_mark = ",", 
+     #   grouping_mark = "."), na = "NA")
+#View(plan_tcc_19902020)
+
+```
+
+```{r Mostrando os dados, out.width="50%"}
+kable(head(dados_gravatai_testando),format = "html") %>% 
+  kable_styling(full_width = FALSE,
+                bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Links  
+
+[Links temas](http://datadreaming.org/post/r-markdown-theme-gallery/)  
