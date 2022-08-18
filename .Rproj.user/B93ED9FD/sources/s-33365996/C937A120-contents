@@ -19,6 +19,12 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r Rotina pra toda vez que abrir o documento, echo = FALSE}
+# Abrir o GitHub Desktop
+# Abrir o RStudio
+# Verificar se estão 
+```
+
 # Instalar os pacotes
 ```{r instalar pacotes}
 # install.packges(tidyverse)
@@ -61,9 +67,15 @@ plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/pl
 #                 bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 # 
 # paged_table(plan_wide_19902020,
-#             options = list(rows.print = 15,
-#                            cols.print = 10))
+#            options = list(rows.print = 15,
+#                           cols.print = 10))
+```
 
+
+```{r Visualização da planilha importada}
+paged_table(plan_wide_19902020,
+           options = list(rows.print = 15,
+                          cols.print = 10))
 ```
 
 
@@ -75,12 +87,12 @@ plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/pl
 # git add README.md
 # git commit -m "A commit from my local computer"
 # 
-# cd ..
-# rm -rf myrepo/
+# cd .. # voltar pro diretório acima
+# rm -rf myrepo/ #remover/apagar a pasta myrepo
 ```
 
 
-```{r Aprendendo Git}
+```{r Aprendendo Git, echo = FALSE}
 # aprendendo a sincronizar usando esse guia -> 
 # https://happygitwithr-com.translate.goog/push-pull-github.html?_x_tr_sl=auto&_x_tr_tl=pt&_x_tr_hl=pt-BR
 # library(usethis)
@@ -119,8 +131,9 @@ plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/pl
 
 
 
+## Parâmetros físico-químicos
 
-
+### Oxigênio Dissolvido
 ```{r Gráfico OD, warning=FALSE}
 (testandood <-ggplot(plan_wide_19902020,aes(CODIGO,
                                            `Oxigênio dissolvido`))+
