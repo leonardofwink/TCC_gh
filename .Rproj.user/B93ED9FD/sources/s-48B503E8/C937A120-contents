@@ -315,30 +315,44 @@ paged_table(plan_wide_19902020,
 #    theme(legend.position = "bottom")+
 #    theme_classic())
 
-# install.packages("modelsummary")
-# library(modelsummary)
-# url111 <- 'https://vincentarelbundock.github.io/Rdatasets/csv/HistData/Guerry.csv'
-# dat <- read.csv(url111) 
-# dat$Small <- dat$Pop1831 > median(dat$Pop1831)
-# datasummary_skim(dat)
-# datasummary_balance(~Small, dat)
-# datasummary_correlation(dat)
-# 
-# datasummary_skim(plan_wide_19902020)
-# plan_wide_19902020 %>% 
-#   select(DBO,
-#          `Oxigênio dissolvido`,
-#          `Fósforo total`,
-#          `Escherichia coli`,
-#          `Nitrogênio amoniacal`,
-#          pH,
-#          Turbidez,
-#          `Sólidos totais`,
-#          `Temperatura ar`) %>% 
-#   datasummary_skim()
-# 
-# mod <- lm(y ~ x, cars)
-# modelsummary(cars)
+install.packages("modelsummary")
+library(modelsummary)
+url111 <- 'https://vincentarelbundock.github.io/Rdatasets/csv/HistData/Guerry.csv'
+dat <- read.csv(url111)
+dat$Small <- dat$Pop1831 > median(dat$Pop1831)
+datasummary_skim(dat)
+datasummary_balance(~Small, dat)
+datasummary_correlation(dat)
+
+datasummary_skim(plan_wide_19902020)
+
+plan_wide_19902020 %>%
+  select(DBO,
+         `Oxigênio dissolvido`,
+         `Fósforo total`,
+         `Escherichia coli`,
+         `Nitrogênio amoniacal`,
+         pH,
+         Turbidez,
+         `Sólidos totais`,
+         `Temperatura água`) %>%
+  datasummary_skim()
+
+parametros_IQA <- plan_wide_19902020 %>%
+  select(`Escherichia coli`,
+         pH,
+         DBO,
+         `Nitrogênio amoniacal`,
+         `Nitrogênio total`,
+         `Fósforo total`,
+         `Temperatura água`,
+         Turbidez,
+         `Sólidos totais`,
+         `Oxigênio dissolvido`)
+
+
+mod <- lm(y ~ x, cars)
+modelsummary(cars)
 
 # fit<-lm(plan_wide_19902020$CODIGO~plan_wide_19902020$DBO)
 # summary(fit)
@@ -366,50 +380,52 @@ paged_table(plan_wide_19902020,
 ```{r Gráfico IQA OD, warning=FALSE, message = FALSE}
 (testandoiqaod <-ggplot(plan_wide_19902020,
                         aes(CODIGO,
-                            IQA_OD))+
+                            IQA_OD, na.rm = TRUE))+
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
             ymin=-Inf,
-            ymax=2,
+            ymax=19,
             alpha=1,
             fill="#ac5079")+ #>pior classe
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
-            ymin=2,
-            ymax=4,
+            ymin=19,
+            ymax=36,
             alpha=1,
             fill="#eb5661")+ #classe 4
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
-            ymin=4,
-            ymax=5,
+            ymin=36,
+            ymax=51,
             alpha=1,
             fill="#fcf7ab")+ #classe 3
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
-            ymin=5,
-            ymax=6,
+            ymin=51,
+            ymax=79,
             alpha=1,
             fill="#70c18c")+ #classe 2
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
-            ymin=6,
+            ymin=79,
             ymax=Inf,
             alpha=1,
             fill="#8dcdeb")+ #classe 1
    stat_boxplot(geom = 'errorbar',
                 width=0.3,
-                position = position_dodge(width = 0.65))+
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
    geom_boxplot(fill='#F8F8FF',
                 color="black",
                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Oxigênio Dissolvido",
+                width= 0.7,
+                na.rm = TRUE)+
+   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 1990-2020",
         x="Estação",
         y="mg/L")+
    # geom_jitter(width = .05,
@@ -441,7 +457,7 @@ paged_table(plan_wide_19902020,
    theme(legend.position = "bottom")+
    theme_classic())
 
-summary(plan_wide_19902020$IQA_OD)
+summary(plan_wide_19902020$CODIGO ~ plan_wide_19902020$IQA_OD)
 
 ```
 

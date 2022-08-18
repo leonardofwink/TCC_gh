@@ -4,19 +4,19 @@
     "created" : 1660786490348.000,
     "dirty" : true,
     "encoding" : "UTF-8",
-    "folds" : "90|32|100|0|\n102|35|134|0|\n145|49|223|0|\n365|53|445|0|\n486|27|488|0|\n492|59|568|0|\n570|18|572|0|\n576|69|652|0|\n656|61|732|0|\n740|72|801|0|\n803|31|805|0|\n808|64|869|0|\n871|23|873|0|\n876|39|918|0|\n",
+    "folds" : "90|32|100|0|\n102|35|134|0|\n145|49|223|0|\n502|27|504|0|\n508|59|584|0|\n586|18|588|0|\n592|69|668|0|\n672|61|748|0|\n756|72|817|0|\n819|31|821|0|\n824|64|885|0|\n887|23|889|0|\n892|39|934|0|\n",
     "hash" : "0",
     "id" : "C937A120",
     "lastKnownWriteTime" : 1660815471,
-    "last_content_update" : 1660815576573,
+    "last_content_update" : 1660816924334,
     "path" : "C:/Users/Léo/Desktop/TCC/planilhas_imp_R_TCC/tcc160822.Rmd",
     "project_path" : null,
     "properties" : {
         "chunk_output_type" : "console",
-        "cursorPosition" : "225,42",
+        "cursorPosition" : "461,0",
         "docOutlineSize" : "111.91208525599363",
         "docOutlineVisible" : "1",
-        "scrollLine" : "140"
+        "scrollLine" : "431"
     },
     "read_only" : false,
     "read_only_alternatives" : [
