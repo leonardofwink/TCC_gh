@@ -4,18 +4,19 @@
     "created" : 1660786490348.000,
     "dirty" : false,
     "encoding" : "UTF-8",
-    "folds" : "81|32|91|0|\n94|35|126|0|\n",
-    "hash" : "2421464335",
+    "folds" : "84|32|94|0|\n96|35|128|0|\n139|49|217|0|\n223|27|225|0|\n229|59|305|0|\n307|18|309|0|\n313|69|389|0|\n393|61|469|0|\n477|72|538|0|\n540|31|542|0|\n545|64|606|0|\n608|23|610|0|\n613|39|655|0|\n",
+    "hash" : "763058355",
     "id" : "C937A120",
-    "lastKnownWriteTime" : 1660788703,
-    "last_content_update" : 1660788703525,
+    "lastKnownWriteTime" : 1660802877,
+    "last_content_update" : 1660802877145,
     "path" : "C:/Users/Léo/Desktop/TCC/planilhas_imp_R_TCC/tcc160822.Rmd",
     "project_path" : null,
     "properties" : {
         "chunk_output_type" : "console",
-        "cursorPosition" : "134,0",
-        "docOutlineVisible" : "0",
-        "scrollLine" : "64"
+        "cursorPosition" : "311,17",
+        "docOutlineSize" : "111.91208525599363",
+        "docOutlineVisible" : "1",
+        "scrollLine" : "134"
     },
     "read_only" : false,
     "read_only_alternatives" : [
