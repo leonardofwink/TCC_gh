@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1660829229089.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "48AECB97",
+    "lastKnownWriteTime" : 3028895621592,
+    "last_content_update" : 1660829229089,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "id" : "90909d41e31d47f1a73d9845896b19e5",
+        "name" : "iqaod_1990_2000",
+        "title" : "iqaod_1990_2000"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 11,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "object_explorer"
+}
