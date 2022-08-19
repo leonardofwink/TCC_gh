@@ -55,6 +55,7 @@ library(knitr)
 library(kableExtra)
 library(ggpubr)
 library(gridExtra)
+library(modelsummary)
 ```
 
 ## importando a planilha
@@ -143,8 +144,10 @@ paged_table(plan_wide_19902020,
 
 ### Oxigênio Dissolvido
 
-```{r Gráfico OD, warning=FALSE, message = FALSE}
-(testandood <-ggplot(plan_wide_19902020,
+```{r Gráfico OD periodo 1, warning=FALSE, message = FALSE}
+(od_p1 <-ggplot(plan_wide_19902020 %>% 
+                       filter(ANO_COLETA>"1990" &
+                              ANO_COLETA<="2000"),
                      aes(CODIGO,
                          `Oxigênio dissolvido`))+
    annotate("rect",
@@ -189,7 +192,7 @@ paged_table(plan_wide_19902020,
                 color="black",
                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
                 width= 0.7)+
-   labs(title = "Oxigênio Dissolvido",
+   labs(title = "Oxigênio Dissolvido no período 1990-2000",
         x="Estação",
         y="mg/L")+
    # geom_jitter(width = .05,
@@ -197,7 +200,7 @@ paged_table(plan_wide_19902020,
    #             size=1.5,
    #             color="black")+
    scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      breaks = ,
+                      n.breaks = 11,
                       limits = c(-1,21))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
@@ -205,22 +208,193 @@ paged_table(plan_wide_19902020,
                alpha=.5,
                na.rm = TRUE,
                size = 1)+
-   geom_line(aes(color="red"),
-             alpha=.0)+
-   scale_color_manual("Legenda",
-                      guide="legend",
-                      values = c("Classe 1"="#8dcdeb",
-                                 "Classe 2"="#70c18c",
-                                 "Classe 3"="#fcf7ab",
-                                 "Classe 4"="#eb5661",
-                                 "Pior Classe"="#ac5079"))+
-   guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
-                                                 lwd=c(2,2,2,2,2),
-                                                 shape=c(NA,NA,NA,NA,NA),
-                                                 alpha=1)))+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
    theme(legend.position = "bottom")+
    theme_classic())
 
+```
+
+```{r Gráfico OD periodo 2, warning=FALSE, message = FALSE}
+(od_p2 <-ggplot(plan_wide_19902020 %>% 
+                       filter(ANO_COLETA>"2000" &
+                              ANO_COLETA<="2010"),
+                     aes(CODIGO,
+                         `Oxigênio dissolvido`))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=2,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=2,
+            ymax=4,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=4,
+            ymax=5,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=5,
+            ymax=6,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=6,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Oxigênio Dissolvido no período 2000-2010",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 11,
+                      limits = c(-1,21))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gráfico OD periodo 3, warning=FALSE, message = FALSE}
+(od_p3 <-ggplot(plan_wide_19902020 %>% 
+                       filter(ANO_COLETA>"2010" &
+                              ANO_COLETA<="2020"),
+                     aes(CODIGO,
+                         `Oxigênio dissolvido`))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=2,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=2,
+            ymax=4,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=4,
+            ymax=5,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=5,
+            ymax=6,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=6,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Oxigênio Dissolvido no período 2010-2020",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 11,
+                      limits = c(-1,21))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gerando os 3 gráficos de OD juntos}
+grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
+summary(plan_wide_19902020 %>%
+          select(CODIGO,
+                 `Oxigênio dissolvido`),
+        filter(ANO_COLETA>"2010" &
+                 ANO_COLETA<="2020"))
 ```
 
 ```{r Gráfico OD_chernobyl, echo = FALSE, warning=FALSE, message = FALSE}
@@ -354,29 +528,57 @@ paged_table(plan_wide_19902020,
 # 
 # modelsummary(mod)
 # 
-# plan_wide_19902020 %>%
-#   select(DBO,
-#          `Oxigênio dissolvido`,
-#          `Fósforo total`,
-#          `Escherichia coli`,
-#          `Nitrogênio amoniacal`,
-#          pH,
-#          Turbidez,
-#          `Sólidos totais`,
-#          `Temperatura água`) %>%
-#   datasummary_skim()
-# 
-# parametros_IQA <- plan_wide_19902020 %>%
-#   select(`Escherichia coli`,
-#          pH,
-#          DBO,
-#          `Nitrogênio amoniacal`,
-#          `Nitrogênio total`,
-#          `Fósforo total`,
-#          `Temperatura água`,
-#          Turbidez,
-#          `Sólidos totais`,
-#          `Oxigênio dissolvido`)
+plan_wide_19902020 %>%
+  select(CODIGO,
+         DBO,
+         `Oxigênio dissolvido`,
+         `Fósforo total`,
+         `Escherichia coli`,
+         `Nitrogênio amoniacal`,
+         pH,
+         Turbidez,
+         `Sólidos totais`,
+         `Temperatura água`) %>%
+  datasummary_skim()
+
+plan_wide_19902020 %>%
+  select(CODIGO,
+         `Oxigênio dissolvido`) %>%
+  datasummary_skim()
+
+# install.packages("estimatr")
+# library(estimatr)
+
+glimpse(plan_wide_19902020)
+
+datasummary(CODIGO + `Oxigênio dissolvido`~
+              P25+ Mean + P75 + SD,
+            data = plan_wide_19902020 %>%
+              select(CODIGO,
+                     `Oxigênio dissolvido`))
+
+# datasummary(
+#   unique(CODIGO) + `Oxigênio dissolvido` ~
+#     P25 + Mean,data = plan_wide_19902020 %>%
+#     select(CODIGO,
+#            `Oxigênio dissolvido`)
+# )
+# install.packages("gtsummary")
+# library(gtsummary)
+
+
+parametros_IQA <- plan_wide_19902020 %>%
+  select(CODIGO,
+         `Escherichia coli`,
+         pH,
+         DBO,
+         `Nitrogênio amoniacal`,
+         `Nitrogênio total`,
+         `Fósforo total`,
+         `Temperatura água`,
+         Turbidez,
+         `Sólidos totais`,
+         `Oxigênio dissolvido`)
 # 
 # 
 # mod <- lm(y ~ x, cars)
@@ -384,29 +586,29 @@ paged_table(plan_wide_19902020,
 
 # fit<-lm(plan_wide_19902020$CODIGO~plan_wide_19902020$DBO)
 # summary(fit)
-# ggplot(plan_wide_19902020,
-#        aes(x=CODIGO,
-#            y=DBO,
-#            add = "reg.line"))+
-#   geom_smooth(method = "lm",
-#                se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
-#                aes(group = 1),
-#                alpha= .5,
-#                na.rm = TRUE,
-#                size = 1)+
-#   geom_point(na.rm = TRUE)+
-#   stat_regline_equation(aes(label = ..eq.label..),
-#                         na.rm = TRUE,
-#                         label.x.npc = "center",
-#                         label.y.npc = "top",
-#                         geom = "text")
+ggplot(plan_wide_19902020,
+       aes(x=CODIGO,
+           y=DBO,
+           add = "reg.line"))+
+  geom_smooth(method = "lm",
+               se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group = 1),
+               alpha= .5,
+               na.rm = TRUE,
+               size = 1)+
+  geom_point(na.rm = TRUE)+
+  stat_regline_equation(aes(label = ..eq.label..),
+                        na.rm = TRUE,
+                        label.x.npc = "center",
+                        label.y.npc = "top",
+                        geom = "text")
 #   
 # 
 # summary(fit)
 ```
 
 
-```{r Gráfico IQA OD periodo1, warning = FALSE, message=FALSE}
+```{r Gráfico IQA OD periodo1, message=FALSE, warning=FALSE}
 (iqaod_1990_2000 <-ggplot(plan_wide_19902020 %>% 
                           filter(ANO_COLETA > "1990" &
                                  ANO_COLETA <= "2000"),
@@ -456,7 +658,7 @@ paged_table(plan_wide_19902020,
                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
                 width= 0.7,
                 na.rm = TRUE)+
-   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 2010-2020",
+   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 1990-2000",
         x="Estação",
         y="mg/L")+
    # geom_jitter(width = .05,
@@ -573,7 +775,7 @@ paged_table(plan_wide_19902020,
 
 ```
 
-```{r Gráfico IQA OD periodo3, warning=FALSE, message = FALSE}
+```{r Gráfico IQA OD periodo3, echo = FALSE, warning=FALSE, message = FALSE}
 (iqaod_2010_2020 <-ggplot(plan_wide_19902020 %>% 
                           filter(ANO_COLETA > "2010" &
                                  ANO_COLETA <= "2020"),
@@ -630,31 +832,34 @@ paged_table(plan_wide_19902020,
    #             alpha=.2,
    #             size=1.5,
    #             color="black")+
-   scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      breaks = ,
+   scale_y_continuous(expand = expansion(mult = c(0,0)), #expandir o limite max de visualização do dado em x%
+                      n.breaks = 6,
                       limits = c(-1,101))+
+   # coord_cartesian(ylim = c(2,98))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
                alpha=.5,
                na.rm = TRUE,
                size = 1)+
-   geom_line(aes(color="red"),
-             alpha=.0)+
-   scale_color_manual("Legenda",
-                      guide="legend",
-                      values = c("Classe 1"="#8dcdeb",
-                                 "Classe 2"="#70c18c",
-                                 "Classe 3"="#fcf7ab",
-                                 "Classe 4"="#eb5661",
-                                 "Pior Classe"="#ac5079"))+
-   guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
-                                                 lwd=c(2,2,2,2,2),
-                                                 shape=c(NA,NA,NA,NA,NA),
-                                                 alpha=1)))+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
    theme(legend.position = "bottom")+
    theme_classic())
+```
 
+```{r Gerando os 3 juntos}
 iqaod1 <- iqaod_1990_2000
 iqaod2 <- iqaod_2000_2010
 iqaod3 <- iqaod_2010_2020
@@ -672,7 +877,7 @@ Resultado que quero chegar pro sumário
 
 ```{r Sumário OD, echo = FALSE}
 # summary(plan_wide_19902020$`Oxigênio dissolvido`)
-summary(plan_wide_19902020)
+# summary(plan_wide_19902020)
 
 # 
 # sumario_OD3 <- plan_wide_19902020 %>%
@@ -682,8 +887,7 @@ summary(plan_wide_19902020)
 #               values_from = plan_wide_19902020$`Oxigênio dissolvido`)
 # 
 # unique(plan_wide_19902020$CODIGO)
-# typeof(plan_wide_19902020$`Oxigênio dissolvido`)
-#   get_summary_stats(type = "common")
+
 # 
 #   pivot_wider(id_cols = CODIGO,
 #               names_from = CODIGO,
@@ -1006,7 +1210,10 @@ summary(plan_wide_19902020$`DBO`)
     scale_y_continuous(expand = expansion(mult = c(0,0)),
                        breaks = ,
                        limits = c(0.1,10000000),
-                       trans = "log10")+
+                       trans = "log10",
+                       labels = scales::number_format(accuracy = 1,
+                                                      decimal.mark = ",",
+                                                      big.mark = " "))+
     geom_smooth(method = "lm",
                 se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                 aes(group=1),

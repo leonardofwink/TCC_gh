@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<style>body{background-color:white;}</style>
+<script src="lib/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="lib/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="lib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="lib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="lib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="lib/kePrint-0.0.1/kePrint.js"></script>
+<link href="lib/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+</head>
+<body>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:right;"> Escherichia coli </th>
+   <th style="text-align:right;"> pH </th>
+   <th style="text-align:right;"> DBO </th>
+   <th style="text-align:right;"> Nitrogênio amoniacal </th>
+   <th style="text-align:right;"> Nitrogênio total </th>
+   <th style="text-align:right;"> Fósforo total </th>
+   <th style="text-align:right;"> Temperatura água </th>
+   <th style="text-align:right;"> Turbidez </th>
+   <th style="text-align:right;"> Sólidos totais </th>
+   <th style="text-align:right;"> Oxigênio dissolvido </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> Escherichia coli </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> pH </td>
+   <td style="text-align:right;"> .09 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> DBO </td>
+   <td style="text-align:right;"> .21 </td>
+   <td style="text-align:right;"> .16 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Nitrogênio amoniacal </td>
+   <td style="text-align:right;"> .28 </td>
+   <td style="text-align:right;"> .30 </td>
+   <td style="text-align:right;"> .76 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Nitrogênio total </td>
+   <td style="text-align:right;"> .22 </td>
+   <td style="text-align:right;"> .28 </td>
+   <td style="text-align:right;"> .65 </td>
+   <td style="text-align:right;"> .88 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Fósforo total </td>
+   <td style="text-align:right;"> .37 </td>
+   <td style="text-align:right;"> .20 </td>
+   <td style="text-align:right;"> .62 </td>
+   <td style="text-align:right;"> .79 </td>
+   <td style="text-align:right;"> .81 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Temperatura água </td>
+   <td style="text-align:right;"> .06 </td>
+   <td style="text-align:right;"> .09 </td>
+   <td style="text-align:right;"> .18 </td>
+   <td style="text-align:right;"> .31 </td>
+   <td style="text-align:right;"> .28 </td>
+   <td style="text-align:right;"> .24 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Turbidez </td>
+   <td style="text-align:right;"> .04 </td>
+   <td style="text-align:right;"> -.04 </td>
+   <td style="text-align:right;"> -.03 </td>
+   <td style="text-align:right;"> -.09 </td>
+   <td style="text-align:right;"> -.01 </td>
+   <td style="text-align:right;"> .06 </td>
+   <td style="text-align:right;"> .13 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sólidos totais </td>
+   <td style="text-align:right;"> .16 </td>
+   <td style="text-align:right;"> .16 </td>
+   <td style="text-align:right;"> .36 </td>
+   <td style="text-align:right;"> .48 </td>
+   <td style="text-align:right;"> .50 </td>
+   <td style="text-align:right;"> .49 </td>
+   <td style="text-align:right;"> .28 </td>
+   <td style="text-align:right;"> .61 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> . </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Oxigênio dissolvido </td>
+   <td style="text-align:right;"> -.21 </td>
+   <td style="text-align:right;"> .05 </td>
+   <td style="text-align:right;"> -.38 </td>
+   <td style="text-align:right;"> -.34 </td>
+   <td style="text-align:right;"> -.36 </td>
+   <td style="text-align:right;"> -.46 </td>
+   <td style="text-align:right;"> -.33 </td>
+   <td style="text-align:right;"> -.06 </td>
+   <td style="text-align:right;"> -.22 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+</tbody>
+</table> <script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [["$","$"]]}})</script><script async src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

@@ -12,16 +12,16 @@
     "path" : null,
     "project_path" : null,
     "properties" : {
-        "cacheKey" : "2BC30F88",
+        "cacheKey" : "620A0F06",
         "caption" : "parametros_IQA",
-        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=parametros_IQA&cache_key=2BC30F88",
-        "displayedObservations" : 1179,
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=parametros_IQA&cache_key=620A0F06",
+        "displayedObservations" : "1179",
         "environment" : "",
         "expression" : "parametros_IQA",
         "object" : "parametros_IQA",
-        "preview" : 0,
-        "totalObservations" : 1179,
-        "variables" : 10
+        "preview" : "0",
+        "totalObservations" : "1179",
+        "variables" : "11"
     },
     "read_only" : false,
     "read_only_alternatives" : [
