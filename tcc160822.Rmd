@@ -1,0 +1,1425 @@
+---
+title: "TCC"
+author: "Leonardo Fernandes Wink"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output:
+  html_document: 
+    highlight: haddock
+    number_sections: yes
+    theme: flatly
+    keep_md: true
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+always_allow_html: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r Rotina pra toda vez que abrir o documento, echo = FALSE}
+# Abrir o GitHub Desktop
+# Abrir o RStudio
+# Verificar se estão 
+```
+
+Anotações de coisas por fazer:
+
+* Aprender a segmentar o meu dataset por períodos
+* aprender a criar uma nova coluna com a segmentação dos períodos
+
+| 1990-2000 | 2000-2010 | 2010-2020 |
+| :-------: | :-------: | :-------: |
+| 1990-2000 | 2000-2010 | 2010-2020 |
+
+
+
+# Instalar os pacotes
+```{r instalar pacotes}
+# install.packages(tidyverse)
+```
+
+## acessar os pacotes
+```{r Acessar os pacotes, message = FALSE, warning = TRUE}
+library(readr)
+library(rmarkdown)
+library(qboxplot)
+library(readxl)
+library(pillar)
+library(dplyr)
+library(tidyverse)
+library(gapminder)
+library(knitr)
+library(kableExtra)
+library(ggpubr)
+library(gridExtra)
+library(modelsummary)
+```
+
+## importando a planilha
+```{r Importando a planilha, message = TRUE, warning = FALSE}
+plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    col_types = cols(Alcalinidade = col_double(), 
+        CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
+        COORD_GEO_LONG_GRAU = col_double(), 
+        DATA_COLETA = col_date(format = "%d/%m/%Y"), 
+        Nitrato = col_double(), Nitrito = col_double(), 
+        SDT = col_double(), SST = col_double(), 
+        `Vazão` = col_double(), `Vazão rio` = col_double()), 
+    locale = locale(date_names = "pt", decimal_mark = ",", 
+        grouping_mark = ""), trim_ws = TRUE)
+```
+
+
+```{r Mostrando os dados, layout="l-body-outset", echo = FALSE}
+# library(rmarkdown)
+# kable(head(plan_wide_19902020),format = "html") %>% 
+#   kable_styling(full_width = FALSE,
+#                 bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+
+```{r Visualização da planilha importada}
+paged_table(plan_wide_19902020,
+           options = list(rows.print = 15,
+                          cols.print = 10))
+```
+
+
+```{r Códigos Git, echo = FALSE}
+# cd myrepo
+# ls
+# head README.md
+# git status
+# git add README.md
+# git commit -m "A commit from my local computer"
+# 
+# cd .. # voltar pro diretório acima
+# rm -rf myrepo/ #remover/apagar a pasta myrepo
+```
+
+```{r Aprendendo Git, echo = FALSE}
+# aprendendo a sincronizar usando esse guia -> 
+# https://happygitwithr-com.translate.goog/push-pull-github.html?_x_tr_sl=auto&_x_tr_tl=pt&_x_tr_hl=pt-BR
+# library(usethis)
+# usethis::create_github_token() criar um código pra acesso e sincronização between R e github
+
+# gitcreds::gitcreds_set() 
+
+# usethis::gh_token_help()
+
+# Como mostrar os dados de um arquivo via Git/GitHub
+# git clone https://github.com/leonardofwink/myrepo.git
+# cd myrepo #acessa a pasta myrepo
+# ls #lista os arquivos da pasta 
+# head README.md #mostra as primeiras observações do arquivo
+
+# Como mostrar os dados de um arquivo via R
+# head(C:/Users/Léo/myrepo/README.md)
+
+# Adicionar uma linha ao README.md e verificar se o Git percebe a mudança
+# echo "A line I wrote on my local computer" >> README.md
+# git status
+## C:\Users\Léo\myrepo>git status
+## On branch main
+## Your branch is up to date with 'origin/main'.
+## 
+## Changes not staged for commit:
+##   (use "git add <file>..." to update what will be committed)
+##   (use "git restore <file>..." to discard changes in working directory)
+##         **modified:   README.md**
+## 
+## no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+
+
+
+
+
+## Parâmetros físico-químicos
+
+### Oxigênio Dissolvido
+
+```{r Gráfico OD periodo 1, warning=FALSE, message = FALSE}
+(od_p1 <-ggplot(plan_wide_19902020 %>% 
+                       filter(ANO_COLETA>"1990" &
+                              ANO_COLETA<="2000"),
+                     aes(CODIGO,
+                         `Oxigênio dissolvido`))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=2,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=2,
+            ymax=4,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=4,
+            ymax=5,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=5,
+            ymax=6,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=6,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Oxigênio Dissolvido no período 1990-2000",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 11,
+                      limits = c(-1,21))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+
+```
+
+```{r Gráfico OD periodo 2, warning=FALSE, message = FALSE}
+(od_p2 <-ggplot(plan_wide_19902020 %>% 
+                       filter(ANO_COLETA>"2000" &
+                              ANO_COLETA<="2010"),
+                     aes(CODIGO,
+                         `Oxigênio dissolvido`))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=2,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=2,
+            ymax=4,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=4,
+            ymax=5,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=5,
+            ymax=6,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=6,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Oxigênio Dissolvido no período 2000-2010",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 11,
+                      limits = c(-1,21))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gráfico OD periodo 3, warning=FALSE, message = FALSE}
+(od_p3 <-ggplot(plan_wide_19902020 %>% 
+                       filter(ANO_COLETA>"2010" &
+                              ANO_COLETA<="2020"),
+                     aes(CODIGO,
+                         `Oxigênio dissolvido`))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=2,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=2,
+            ymax=4,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=4,
+            ymax=5,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=5,
+            ymax=6,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=6,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Oxigênio Dissolvido no período 2010-2020",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 11,
+                      limits = c(-1,21))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gerando os 3 gráficos de OD juntos}
+grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
+summary(plan_wide_19902020 %>%
+          select(CODIGO,
+                 `Oxigênio dissolvido`),
+        filter(ANO_COLETA>"2010" &
+                 ANO_COLETA<="2020"))
+```
+
+```{r Gráfico OD_chernobyl, echo = FALSE, warning=FALSE, message = FALSE}
+# (testandood <-ggplot(plan_wide_19902020,
+#                      aes(CODIGO,
+#                          `Oxigênio dissolvido`))+
+#    annotate("rect",
+#             xmin=-Inf,
+#             xmax=Inf,
+#             ymin=-Inf,
+#             ymax=2,
+#             alpha=1,
+#             fill="#ac5079")+ #>pior classe
+#    annotate("rect",
+#             xmin=-Inf,
+#             xmax=Inf,
+#             ymin=2,
+#             ymax=4,
+#             alpha=1,
+#             fill="#eb5661")+ #classe 4
+#    annotate("rect",
+#             xmin=-Inf,
+#             xmax=Inf,
+#             ymin=4,
+#             ymax=5,
+#             alpha=1,
+#             fill="#fcf7ab")+ #classe 3
+#    annotate("rect",
+#             xmin=-Inf,
+#             xmax=Inf,
+#             ymin=5,
+#             ymax=6,
+#             alpha=1,
+#             fill="#70c18c")+ #classe 2
+#    annotate("rect",
+#             xmin=-Inf,
+#             xmax=Inf,
+#             ymin=6,
+#             ymax=Inf,
+#             alpha=1,
+#             fill="#8dcdeb")+ #classe 1
+#    stat_boxplot(geom = 'errorbar',
+#                 width=0.3,
+#                 position = position_dodge(width = 0.65))+
+#    geom_boxplot(fill='#F8F8FF',
+#                 color="black",
+#                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+#                 width= 0.7)+
+#    labs(title = "Oxigênio Dissolvido",
+#         x="Estação",
+#         y="mg/L")+
+#    # geom_jitter(width = .05,
+#    #             alpha=.2,
+#    #             size=1.5,
+#    #             color="black")+
+#    scale_y_continuous(expand = expansion(mult = c(0,0)),
+#                       breaks = ,
+#                       limits = c(-1,21))+
+#    geom_smooth(method = "lm",
+#                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+#                aes(group=1),
+#                alpha=.5,
+#                na.rm = TRUE,
+#                size = 1)+
+#    stat_cor(na.rm = TRUE,
+#             label.y = 15,
+#             hjust = 0,
+#             show.legend = TRUE)+
+#    stat_regline_equation(na.rm = TRUE,
+#                          label.y = 50,
+#                          # label.x = "87398500",
+#                          aes(label = ..eq.label..))+
+#    stat_regline_equation(na.rm=TRUE,
+#                          label.y = 100,
+#                          # label.x = "87398500",
+#                          aes(label = ..adj.rr.label..),
+#                          hjust = 0,
+#                          show.legend = TRUE)+
+#    geom_line(aes(color="red"),
+#              alpha=.0)+
+#    scale_color_manual("Legenda",
+#                       guide="legend",
+#                       values = c("Classe 1"="#8dcdeb",
+#                                  "Classe 2"="#70c18c",
+#                                  "Classe 3"="#fcf7ab",
+#                                  "Classe 4"="#eb5661",
+#                                  "Pior Classe"="#ac5079"))+
+#    guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+#                                                  lwd=c(2,2,2,2,2),
+#                                                  shape=c(NA,NA,NA,NA,NA),
+#                                                  alpha=1)))+
+#    theme(legend.position = "bottom")+
+#    theme_classic())
+
+# install.packages("modelsummary")
+# library(modelsummary)
+# url111 <- 'https://vincentarelbundock.github.io/Rdatasets/csv/HistData/Guerry.csv'
+# dat <- read.csv(url111)
+# dat$Small <- dat$Pop1831 > median(dat$Pop1831)
+# datasummary_skim(dat)
+# datasummary_balance(~Small, dat)
+# datasummary_correlation(dat)
+# 
+# 
+# datasummary_correlation(parametros_IQA)
+# datasummary(Literacy + Commerce~Small *(mean+sd), dat)
+# mod <- lm(Donations~Crime_prop, data = dat)
+# 
+# mod2 <-lm(data = plan_wide_19902020,
+#           plan_wide_19902020$CODIGO ~ list(parametros_IQA))
+# 
+# for (i in 1:lenght(parametros_IQA)){
+#   lm(plan_wide_19902020$CODIGO ~ parametros_IQA[i])
+# }
+# 
+# training_data <- as.data.frame(matrix(sample(1:64), nrow = 8))
+# colnames(training_data) <- c("independent_variable", paste0("x", 1:7))
+# Vars <- as.list(c("x1+x2+x3",
+#                 "x1+x2+x4",
+#                 "x1+x2+x5",
+#                 "x1+x2+x6",
+#                 "x1+x2+x7"))
+# allModelsList <- lapply(paste("independent_variable ~", Vars), as.formula)
+# allModelsResults <- lapply(allModelsList, function(x) lm(x, data = training_data))
+# allModelsSummaries = lapply(allModelsResults, summary) 
+# allModelsSummaries[[1]]$r.squared
+# 
+# 
+# 
+# 
+# 
+# modelsummary(mod)
+# 
+plan_wide_19902020 %>%
+  select(CODIGO,
+         DBO,
+         `Oxigênio dissolvido`,
+         `Fósforo total`,
+         `Escherichia coli`,
+         `Nitrogênio amoniacal`,
+         pH,
+         Turbidez,
+         `Sólidos totais`,
+         `Temperatura água`) %>%
+  datasummary_skim()
+
+plan_wide_19902020 %>%
+  select(CODIGO,
+         `Oxigênio dissolvido`) %>%
+  datasummary_skim()
+
+# install.packages("estimatr")
+# library(estimatr)
+
+glimpse(plan_wide_19902020)
+
+datasummary(CODIGO + `Oxigênio dissolvido`~
+              P25+ Mean + P75 + SD,
+            data = plan_wide_19902020 %>%
+              select(CODIGO,
+                     `Oxigênio dissolvido`))
+
+
+# datasummary(
+#   unique(CODIGO) + `Oxigênio dissolvido` ~
+#     P25 + Mean,data = plan_wide_19902020 %>%
+#     select(CODIGO,
+#            `Oxigênio dissolvido`)
+# )
+# install.packages("gtsummary")
+library(gtsummary)
+
+parametros_IQA <- plan_wide_19902020 %>%
+  select(CODIGO,
+         `Escherichia coli`,
+         pH,
+         DBO,
+         `Nitrogênio amoniacal`,
+         `Nitrogênio total`,
+         `Fósforo total`,
+         `Temperatura água`,
+         Turbidez,
+         `Sólidos totais`,
+         `Oxigênio dissolvido`)
+# 
+# 
+# mod <- lm(y ~ x, cars)
+# modelsummary(cars)
+
+# fit<-lm(plan_wide_19902020$CODIGO~plan_wide_19902020$DBO)
+# summary(fit)
+ggplot(plan_wide_19902020,
+       aes(x=CODIGO,
+           y=DBO,
+           add = "reg.line"))+
+  geom_smooth(method = "lm",
+               se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group = 1),
+               alpha= .5,
+               na.rm = TRUE,
+               size = 1)+
+  geom_point(na.rm = TRUE)+
+  stat_regline_equation(aes(label = ..eq.label..),
+                        na.rm = TRUE,
+                        label.x.npc = "center",
+                        label.y.npc = "top",
+                        geom = "text")
+#   
+# 
+# summary(fit)
+```
+
+
+```{r Gráfico IQA OD periodo1, message=FALSE, warning=FALSE}
+(iqaod_1990_2000 <-ggplot(plan_wide_19902020 %>% 
+                          filter(ANO_COLETA > "1990" &
+                                 ANO_COLETA <= "2000"),
+                        aes(CODIGO,
+                            IQA_OD, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=19,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=19,
+            ymax=36,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=36,
+            ymax=51,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=51,
+            ymax=79,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=79,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7,
+                na.rm = TRUE)+
+   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 1990-2000",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      breaks = ,
+                      limits = c(-1,101))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gráfico IQA OD periodo2, warning= FALSE, message = FALSE}
+(iqaod_2000_2010 <-ggplot(plan_wide_19902020 %>% 
+                          filter(ANO_COLETA > "2000" &
+                                 ANO_COLETA <= "2010"),
+                        aes(CODIGO,
+                            IQA_OD, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=19,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=19,
+            ymax=36,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=36,
+            ymax=51,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=51,
+            ymax=79,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=79,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7,
+                na.rm = TRUE)+
+   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 2010-2020",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      breaks = ,
+                      limits = c(-1,101))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+
+```
+
+```{r Gráfico IQA OD periodo3, echo = FALSE, warning=FALSE, message = FALSE}
+(iqaod_2010_2020 <-ggplot(plan_wide_19902020 %>% 
+                          filter(ANO_COLETA > "2010" &
+                                 ANO_COLETA <= "2020"),
+                        aes(CODIGO,
+                            IQA_OD, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=19,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=19,
+            ymax=36,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=36,
+            ymax=51,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=51,
+            ymax=79,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=79,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7,
+                na.rm = TRUE)+
+   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 2010-2020",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)), #expandir o limite max de visualização do dado em x%
+                      n.breaks = 6,
+                      limits = c(-1,101))+
+   # coord_cartesian(ylim = c(2,98))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Classe 1"="#8dcdeb",
+   #                               "Classe 2"="#70c18c",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 4"="#eb5661",
+   #                               "Pior Classe"="#ac5079"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+   #                                               lwd=c(2,2,2,2,2),
+   #                                               shape=c(NA,NA,NA,NA,NA),
+   #                                               alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gerando os 3 juntos}
+iqaod1 <- iqaod_1990_2000
+iqaod2 <- iqaod_2000_2010
+iqaod3 <- iqaod_2010_2020
+grid.arrange(iqaod1, iqaod2, iqaod3, ncol = 3)
+```
+
+Resultado que quero chegar pro sumário
+
+| variable  | Estação 1 | Estação 2 |  Estação 3 |  Estação 4 |
+| :-------: | :-------: | :-------: |  :-------: |  :-------: |
+| max       | 15        |   17      |     16     |    14      |
+| med       | 14        |   16      |     15     |    13      |
+| min       | 13        |   15      |     14     |    12      |
+| n         | 15        |   12      |     3      |    4       |
+
+```{r Sumário OD, echo = FALSE}
+# summary(plan_wide_19902020$`Oxigênio dissolvido`)
+# summary(plan_wide_19902020)
+
+# 
+# sumario_OD3 <- plan_wide_19902020 %>%
+#   select(DATA_COLETA, CODIGO, `Oxigênio dissolvido`) %>% 
+#   pivot_wider(id_cols = DATA_COLETA,
+#               names_from = CODIGO,
+#               values_from = plan_wide_19902020$`Oxigênio dissolvido`)
+# 
+# unique(plan_wide_19902020$CODIGO)
+
+# 
+#   pivot_wider(id_cols = CODIGO,
+#               names_from = CODIGO,
+#               values_from = `Oxigênio dissolvido`)
+# 
+# 
+#   group_by(CODIGO) %>%
+#   get_summary_stats(type = "common") %>%
+#   pivot_wider(id_cols = variable,
+#               names_from = CODIGO,
+#               values_from = variable$`Oxigênio dissolvido`)
+# 
+# # install.packages("ggpubr")
+# # library(ggpubr)
+```
+
+```{r setup, include=FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Demanda Bioquímica de Oxigênio
+
+```{r Código Gráfico DBO, warning = FALSE, message = FALSE}
+(testandodbo<-ggplot(plan_wide_19902020,aes(CODIGO,
+                                            DBO))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=10,
+            ymax=Inf,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   # annotate("rect",
+   #          xmin=-Inf,
+   #          xmax=Inf,
+   #          ymin=2,
+   #          ymax=4,
+   #          alpha=1,
+   #          fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=5,
+            ymax=10,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=3,
+            ymax=5,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=3,
+            ymax=-Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Demanda Bioquímica de Oxigênio",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      breaks = ,
+                      limits = c(0,25))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1.1,
+               color = "#5c3800")+
+   geom_line(aes(color="red"),
+             alpha=.0)+
+   scale_color_manual("Legenda",
+                      guide="legend",
+                      values = c("Pior Classe"="#ac5079",
+                                 "Classe 3"="#fcf7ab",
+                                 "Classe 2"="#70c18c",
+                                 "Classe 1"="#8dcdeb"))+
+   guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1),
+                                                 lwd=c(2,2,2,2),
+                                                 shape=c(NA,NA,NA,NA),
+                                                 alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
+
+```{r Gráfico IQA DBO, warning = FALSE, message = FALSE}
+
+(iqa_dbo<-ggplot(plan_wide_19902020,aes(CODIGO,
+                                        IQA_DBO))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=19,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=19,
+            ymax=36,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=36,
+            ymax=51,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=51,
+            ymax=79,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=79,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1))
+    stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Variação do IQA para o parâmetro DBO 1990-2020",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      breaks = ,
+                      limits = c(-1,101))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   geom_line(aes(color="red"),
+             alpha=.0)+
+   scale_color_manual("Legenda",
+                      guide="legend",
+                      values = c("Classe 1"="#8dcdeb",
+                                 "Classe 2"="#70c18c",
+                                 "Classe 3"="#fcf7ab",
+                                 "Classe 4"="#eb5661",
+                                 "Pior Classe"="#ac5079"))+
+   guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+                                                 lwd=c(2,2,2,2,2),
+                                                 shape=c(NA,NA,NA,NA,NA),
+                                                 alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+   
+```
+
+```{r Sumário DBO}
+summary(plan_wide_19902020$`DBO`)
+```
+
+### Fósforo total
+
+```{r Código Gráfico Fósforo total, warning = FALSE, message = FALSE}
+(testandoptot<-ggplot(plan_wide_19902020,aes(CODIGO,
+                                             `Fósforo total`))+
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0.15,
+             ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    #annotate("rect",
+    #        xmin=-Inf,
+    #       xmax=Inf,
+    #      ymin=2,
+    #     ymax=4,
+    #    alpha=1,
+    #   fill="#eb5661")+ #classe 4
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0.1,
+             ymax=0.15,
+             alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    #annotate("rect",
+    #        xmin=-Inf,
+    #       xmax=Inf,
+    #      ymin=3,
+    #     ymax=5,
+    #    alpha=1,
+    #   fill="#70c18c")+ #classe 2
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0,
+             ymax=0.1,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    stat_boxplot(geom = 'errorbar',
+                 width=0.3,
+                 position = position_dodge(width = 0.65))+
+    geom_boxplot(fill='#F8F8FF',
+                 color="black",
+                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                 width= 0.7)+
+    labs(title = "Fósforo total",
+         x="Estação",
+         y="mg/L")+
+    # geom_jitter(width = .05,
+    #             alpha=.2,
+    #             size=1.5,
+    #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0,0)),
+                       breaks = ,
+                       limits = c(0.01,2),
+                       trans = "log10")+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                size = 1.1,
+                color = "#5c3800")+
+    geom_line(aes(color="red"),
+              alpha=.0)+
+    scale_color_manual("Legenda",
+                       guide="legend",
+                       values = c("Pior Classe"="#ac5079",
+                                  "Classe 3"="#fcf7ab",
+                                  "Classe 1"="#8dcdeb"))+
+    guides(color=guide_legend(override.aes = list(linetype=c(1,1,1),
+                                                  lwd=c(2,2,2),
+                                                  shape=c(NA,NA,NA),
+                                                  alpha=1)))+
+    theme_classic())
+
+```
+
+### Escherichia coli
+
+```{r Código Gráfico Ecoli, warning = FALSE, message = FALSE}
+(testandoecoli<-ggplot(plan_wide_19902020,aes(CODIGO,
+                                              plan_wide_19902020$`Escherichia coli`))+
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=3200,
+             ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    #annotate("rect",
+    #        xmin=-Inf,
+    #       xmax=Inf,
+    #      ymin=2,
+    #     ymax=4,
+    #    alpha=1,
+    #   fill="#eb5661")+ #classe 4
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=800,
+             ymax=3200,
+             alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=160,
+             ymax=800,
+             alpha=1,
+             fill="#70c18c")+ #classe 2
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0,
+             ymax=160,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    stat_boxplot(geom = 'errorbar',
+                 width=0.3,
+                 position = position_dodge(width = 0.65))+
+    geom_boxplot(fill='#F8F8FF',
+                 color="black",
+                 outlier.shape = 8, #se deixar NA fica só o jitter, se não, deixa 1
+                 width= 0.7)+
+    labs(title = "Escherichia coli",
+         x="Estação",
+         y="NMP/100mL")+
+    #geom_jitter(width = .05,
+     #           alpha=.2,
+      #          size=1.5,
+       #         color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0,0)),
+                       breaks = ,
+                       limits = c(0.1,10000000),
+                       trans = "log10",
+                       labels = scales::number_format(accuracy = 1,
+                                                      decimal.mark = ",",
+                                                      big.mark = " "))+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                size = 1.1,
+                color = "#5c3800")+
+    geom_line(aes(color="red"),
+              alpha=.0)+
+    scale_color_manual("Legenda",
+                       guide="legend",
+                       values = c("Pior Classe"="#ac5079",
+                                  "Classe 3"="#fcf7ab",
+                                  "Classe 2"="#70c18c",
+                                  "Classe 1"="#8dcdeb"))+
+    guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1),
+                                                  lwd=c(2,2,2,2),
+                                                  shape=c(NA,NA,NA,NA),
+                                                  alpha=1)))+
+    theme_classic())
+```
+
+```{r Sumário Ecoli}
+summary(plan_wide_19902020$`Escherichia coli`)
+```
+
+### Nitrogênio amoniacal
+
+```{r Código Gráfico Nitrogênio total, warning = FALSE, message = FALSE}
+(testandonamon<-ggplot(plan_wide_19902020,aes(CODIGO,
+                                              plan_wide_19902020$`Nitrogênio total`))+
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0,
+             ymax=3.7,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=13.3,
+             ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+            xmin=-Inf,
+             xmax=Inf,
+             ymin=3.7,
+             ymax=13.3,
+           alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    stat_boxplot(geom = 'errorbar',
+                 width=0.3,
+                 position = position_dodge(width = 0.65))+
+    geom_boxplot(fill='#F8F8FF',
+                 color="black",
+                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                 width= 0.7)+
+    labs(title = "Nitrogênio amoniacal",
+         x="Estação",
+         y="mg/L")+
+    # geom_jitter(width = .05,
+    #             alpha=.2,
+    #             size=1.5,
+    #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0,0)),
+                       breaks = ,
+                       limits = c(0.01,100),
+                       trans = "log10")+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                size = 1.1,
+                color = "#5c3800")+
+    geom_line(aes(color="red"),
+              alpha=.0)+
+    scale_color_manual("Legenda",
+                       guide="legend",
+                       values = c("Pior Classe"="#ac5079",
+                                  "Classe 3"="#fcf7ab",
+                                  "Classe 1"="#8dcdeb"))+
+    guides(color=guide_legend(override.aes = list(linetype=c(1,1,1),
+                                                  lwd=c(2,2,2),
+                                                  shape=c(NA,NA,NA),
+                                                  alpha=1)))+
+    theme_classic())
+```
+
+```{r Sumário Nitrogênio total}
+summary(plan_wide_19902020$`Nitrogênio total`)
+```
+
+### Turbidez
+```{r Código Gráfico Turbidez, warning = FALSE, message = FALSE}
+(testandoturb<-ggplot(plan_wide_19902020,aes(CODIGO,
+                                             Turbidez))+
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=100,
+             ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=40,
+             ymax=100,
+             alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin=-Inf,
+             xmax=Inf,
+             ymin=0,
+             ymax=40,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    stat_boxplot(geom = 'errorbar',
+                 width=0.3,
+                 position = position_dodge(width = 0.65))+
+    geom_boxplot(fill='#F8F8FF',
+                 color="black",
+                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                 width= 0.7)+
+    labs(title = "Turbidez",
+         x="Estação",
+         y="UNT")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0,0)),
+                       breaks = ,
+                       limits = c(1,1000),
+                       trans = "log10")+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                size = 1.1,
+                color = "#5c3800")+
+    geom_line(aes(color="red"),
+              alpha=.0)+
+    scale_color_manual("Legenda",
+                       guide="legend",
+                       values = c("Pior Classe"="#ac5079",
+                                  "Classe 3"="#fcf7ab",
+                                  "Classe 1"="#8dcdeb"))+
+    guides(color=guide_legend(override.aes = list(linetype=c(1,1,1),
+                                                  lwd=c(2,2,2),
+                                                  shape=c(NA,NA,NA),
+                                                  alpha=1)))+
+    theme_classic())
+```
+
+```{r Sumário Turbidez}
+summary(plan_wide_19902020$Turbidez)
+```
+
+## Testando coisas
+```{r Testando coisas, include = FALSE}
+# ggplot(mtcars, aes(x=hp, y=wt)) +
+#   geom_point() +
+#   geom_smooth()
+# 
+# iris %>% 
+#   qplot(Sepal.Length, Sepal.Width, 
+#         colour = Species, fill=Species, data=.) + 
+#   geom_smooth(method=lm)
+# 
+# 
+# df111 <- data.frame(x = c(1:100))
+# glimpse(df111)
+# df111$y <- 2 + 3 * df111$x + rnorm(100, sd = 40)
+# p111 <- ggplot(data = df111, aes(x = x, y = y)) +
+#             geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
+#             geom_point()
+# p111
+# 
+# lm_eqn <- function(df111){
+#     m <- lm(y ~ x, df111);
+#     eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+#          list(a = format(unname(coef(m)[1]), digits = 2),
+#               b = format(unname(coef(m)[2]), digits = 2),
+#              r2 = format(summary(m)$r.squared, digits = 3)))
+#     as.character(as.expression(eq));
+# }
+# 
+# p2 <- p111 +
+#   geom_text(x = 25, y = 300,
+#             label = lm_eqn(df111),
+#             parse = TRUE)
+
+# install.packages("ggpmisc")
+# library(ggpmisc)
+
+# summary(lm(plan_wide_19902020$CODIGO~plan_wide_19902020$DBO))
+# 
+# 
+# p <- ggplot(data, aes(y=number, x=pod)) +
+#   geom_boxplot()
+# print(p)
+```
+
+
