@@ -1,0 +1,31 @@
+{
+    "id": "055CED14",
+    "path": "C:/Users/maria/OneDrive/Área de Trabalho/Amor/TCC_gh/tcc160822.Rmd",
+    "project_path": "tcc160822.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1661018312081.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "106,11",
+        "scrollLine": "59",
+        "docOutlineVisible": "1",
+        "rmdVisualMode": "false",
+        "rmdVisualCollapsedChunks": "",
+        "rmdVisualModeLocation": "2:0"
+    },
+    "folds": "61|82|73|0|\n75|86|87|0|\n98|53|102|0|\n242|59|321|0|\n928|59|1004|0|\n",
+    "lastKnownWriteTime": 1661022147,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1661022249370,
+    "read_only": false,
+    "read_only_alternatives": []
+}

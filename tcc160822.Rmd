@@ -27,7 +27,7 @@ editor_options:
 
 Anotações de coisas por fazer:
 
-* Aprender a segmentar o meu dataset por períodos
+* _Aprender a segmentar o meu dataset por períodos_
 * aprender a criar uma nova coluna com a segmentação dos períodos
 
 | 1990-2000 | 2000-2010 | 2010-2020 |
@@ -59,8 +59,22 @@ library(modelsummary)
 ```
 
 ## importando a planilha
-```{r Importando a planilha, message = TRUE, warning = FALSE}
-plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+```{r Importando a planilha em casa, echo = FALSE,message = TRUE, warning = FALSE}
+# plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+#     delim = "\t", escape_double = FALSE, 
+#     col_types = cols(Alcalinidade = col_double(), 
+#         CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
+#         COORD_GEO_LONG_GRAU = col_double(), 
+#         DATA_COLETA = col_date(format = "%d/%m/%Y"), 
+#         Nitrato = col_double(), Nitrito = col_double(), 
+#         SDT = col_double(), SST = col_double(), 
+#         `Vazão` = col_double(), `Vazão rio` = col_double()), 
+#     locale = locale(date_names = "pt", decimal_mark = ",", 
+#         grouping_mark = ""), trim_ws = TRUE)
+```
+
+```{r Importando a planilha na Mariana, echo = FALSE, message = TRUE, warning = FALSE}
+plan_wide_19902020 <- read_delim("C:/Users/maria/OneDrive/Área de Trabalho/Amor/TCC_gh/plan_wide_19902020.tsv", 
     delim = "\t", escape_double = FALSE, 
     col_types = cols(Alcalinidade = col_double(), 
         CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
@@ -551,11 +565,11 @@ plan_wide_19902020 %>%
 
 glimpse(plan_wide_19902020)
 
-datasummary(CODIGO + `Oxigênio dissolvido`~
-              P25+ Mean + P75 + SD,
-            data = plan_wide_19902020 %>%
-              select(CODIGO,
-                     `Oxigênio dissolvido`))
+# datasummary(CODIGO + `Oxigênio dissolvido`~
+#               P25+ Mean + P75 + SD,
+#             data = plan_wide_19902020 %>%
+#               select(CODIGO,
+#                      `Oxigênio dissolvido`))
 
 
 # datasummary(
@@ -586,22 +600,22 @@ parametros_IQA <- plan_wide_19902020 %>%
 
 # fit<-lm(plan_wide_19902020$CODIGO~plan_wide_19902020$DBO)
 # summary(fit)
-ggplot(plan_wide_19902020,
-       aes(x=CODIGO,
-           y=DBO,
-           add = "reg.line"))+
-  geom_smooth(method = "lm",
-               se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group = 1),
-               alpha= .5,
-               na.rm = TRUE,
-               size = 1)+
-  geom_point(na.rm = TRUE)+
-  stat_regline_equation(aes(label = ..eq.label..),
-                        na.rm = TRUE,
-                        label.x.npc = "center",
-                        label.y.npc = "top",
-                        geom = "text")
+# ggplot(plan_wide_19902020,
+#        aes(x=CODIGO,
+#            y=DBO,
+#            add = "reg.line"))+
+#   geom_smooth(method = "lm",
+#                se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
+#                aes(group = 1),
+#                alpha= .5,
+#                na.rm = TRUE,
+#                size = 1)+
+#   geom_point(na.rm = TRUE)+
+#   stat_regline_equation(aes(label = ..eq.label..),
+#                         na.rm = TRUE,
+#                         label.x.npc = "center",
+#                         label.y.npc = "top",
+#                         geom = "text")
 #   
 # 
 # summary(fit)
@@ -660,13 +674,13 @@ ggplot(plan_wide_19902020,
                 na.rm = TRUE)+
    labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 1990-2000",
         x="Estação",
-        y="mg/L")+
+        y="")+
    # geom_jitter(width = .05,
    #             alpha=.2,
    #             size=1.5,
    #             color="black")+
    scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      breaks = ,
+                      n.breaks = 6,
                       limits = c(-1,101))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
@@ -741,15 +755,15 @@ ggplot(plan_wide_19902020,
                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
                 width= 0.7,
                 na.rm = TRUE)+
-   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 2010-2020",
+   labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 2000-2010",
         x="Estação",
-        y="mg/L")+
+        y="")+
    # geom_jitter(width = .05,
    #             alpha=.2,
    #             size=1.5,
    #             color="black")+
    scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      breaks = ,
+                      n.breaks = 6,
                       limits = c(-1,101))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
@@ -827,7 +841,7 @@ ggplot(plan_wide_19902020,
                 na.rm = TRUE)+
    labs(title = "Variação do IQA para o parâmetro Oxigênio Dissolvido 2010-2020",
         x="Estação",
-        y="mg/L")+
+        y="")+
    # geom_jitter(width = .05,
    #             alpha=.2,
    #             size=1.5,
@@ -863,7 +877,9 @@ ggplot(plan_wide_19902020,
 iqaod1 <- iqaod_1990_2000
 iqaod2 <- iqaod_2000_2010
 iqaod3 <- iqaod_2010_2020
-grid.arrange(iqaod1, iqaod2, iqaod3, ncol = 3)
+
+grid.arrange(od_p1, od_p2, od_p3,
+             iqaod1, iqaod2, iqaod3, ncol = 3, nrow = 2)
 ```
 
 Resultado que quero chegar pro sumário
