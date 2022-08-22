@@ -7,7 +7,7 @@ output:
     highlight: haddock
     number_sections: yes
     theme: flatly
-    keep_md: true
+    keep_md: yes
     toc: yes
     toc_float:
       collapsed: no
@@ -96,7 +96,7 @@ plan_wide_19902020 <- read_delim("C:/Users/maria/OneDrive/Área de Trabalho/Amor
 ```
 
 
-```{r Visualização da planilha importada}
+```{r Visualização da planilha importada, echo=FALSE}
 paged_table(plan_wide_19902020,
            options = list(rows.print = 15,
                           cols.print = 10))
@@ -897,7 +897,7 @@ Resultado que quero chegar pro sumário
 
 # 
 # sumario_OD3 <- plan_wide_19902020 %>%
-#   select(DATA_COLETA, CODIGO, `Oxigênio dissolvido`) %>% 
+#   select(DATA_COLETA, CODIGO, `Oxigênio dissolvido`) %>%
 #   pivot_wider(id_cols = DATA_COLETA,
 #               names_from = CODIGO,
 #               values_from = plan_wide_19902020$`Oxigênio dissolvido`)
@@ -1004,10 +1004,94 @@ Resultado que quero chegar pro sumário
    theme_classic())
 ```
 
-```{r Gráfico IQA DBO, warning = FALSE, message = FALSE}
+```{r Gráfico IQA DBO periodo 1, warning = FALSE, message = FALSE}
+(iqadbo_1990_2000<-ggplot(plan_wide_19902020 %>% 
+                            filter(ANO_COLETA>"1990" &
+                                     ANO_COLETA<="2000"),
+                          aes(CODIGO,
+                              IQA_DBO, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=19,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=19,
+            ymax=36,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=36,
+            ymax=51,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=51,
+            ymax=79,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=79,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1))
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Variação do IQA para o parâmetro DBO 1990-2020",
+        x="Estação",
+        y="mg/L")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 6,
+                      limits = c(-1,101))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   geom_line(aes(color="red"),
+             alpha=.0)+
+   scale_color_manual("Legenda",
+                      guide="legend",
+                      values = c("Classe 1"="#8dcdeb",
+                                 "Classe 2"="#70c18c",
+                                 "Classe 3"="#fcf7ab",
+                                 "Classe 4"="#eb5661",
+                                 "Pior Classe"="#ac5079"))+
+   guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+                                                 lwd=c(2,2,2,2,2),
+                                                 shape=c(NA,NA,NA,NA,NA),
+                                                 alpha=1)))+
+   theme(legend.position = "bottom")+
+   theme_classic())
+```
 
-(iqa_dbo<-ggplot(plan_wide_19902020,aes(CODIGO,
-                                        IQA_DBO))+
+```{r Gráfico IQA DBO período2, warning = FALSE, message = FALSE}
+(iqadbo_2000_2010<-ggplot(plan_wide_19902020 %>% 
+                            filter(ANO_COLETA>"2000" &
+                                   ANO_COLETA<="2010"),
+                          aes(CODIGO,
+                              IQA_DBO))+
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
@@ -1051,7 +1135,7 @@ Resultado que quero chegar pro sumário
                 color="black",
                 outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
                 width= 0.7)+
-   labs(title = "Variação do IQA para o parâmetro DBO 1990-2020",
+   labs(title = "Variação do IQA para o parâmetro DBO 2000-2010",
         x="Estação",
         y="mg/L")+
    # geom_jitter(width = .05,
@@ -1059,7 +1143,7 @@ Resultado que quero chegar pro sumário
    #             size=1.5,
    #             color="black")+
    scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      breaks = ,
+                      n.breaks = 6,
                       limits = c(-1,101))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
@@ -1082,7 +1166,6 @@ Resultado que quero chegar pro sumário
                                                  alpha=1)))+
    theme(legend.position = "bottom")+
    theme_classic())
-   
 ```
 
 ```{r Sumário DBO}
