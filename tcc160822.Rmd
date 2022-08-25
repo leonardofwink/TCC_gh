@@ -20,7 +20,6 @@ editor_options:
 ---
 
 ```{r Rotina pra toda vez que abrir o documento, echo = FALSE}
-tic()
 # Abrir o GitHub Desktop
 # Abrir o RStudio
 # Verificar se estão 
@@ -33,6 +32,8 @@ tic()
 * aprender a colocar a legenda dentro do gráfico
   * reduzir o tamanho da legenda
 * corrigir os valores 0 de IQA pra NA
+* descobrir como conseguir a equação do lm
+* aprender a pivotar o sumário
 
 
 | 1990-2000 | 2000-2010 | 2010-2020 |
@@ -66,6 +67,7 @@ library(gtsummary)
 
 ## importando a planilha
 ```{r Importando a planilha, message = TRUE, warning = FALSE}
+
 plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
     delim = "\t", escape_double = FALSE, 
     col_types = cols(Alcalinidade = col_double(), 
@@ -77,6 +79,7 @@ plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/pl
         `Vazão` = col_double(), `Vazão rio` = col_double()), 
     locale = locale(date_names = "pt", decimal_mark = ",", 
         grouping_mark = ""), trim_ws = TRUE)
+
 ```
 
 
@@ -227,10 +230,10 @@ paged_table(plan_wide_19902020,
    #                                               alpha=1)))+
    theme(legend.position = "bottom")+
    theme_classic())
-
 ```
 
 ```{r Gráfico OD periodo 2, echo = FALSE, warning=FALSE, message = FALSE}
+
 (od_p2 <-ggplot(plan_wide_19902020 %>% 
                        filter(ANO_COLETA>"2000" &
                               ANO_COLETA<="2010"),
@@ -309,6 +312,7 @@ paged_table(plan_wide_19902020,
    #                                               alpha=1)))+
    theme(legend.position = "bottom")+
    theme_classic())
+
 ```
 
 ```{r Gráfico OD periodo 3, echo = FALSE, warning=FALSE, message = FALSE}
@@ -578,18 +582,18 @@ paged_table(plan_wide_19902020,
 
 
 
-# parametros_IQA <- plan_wide_19902020 %>%
-#   select(CODIGO,
-#          `Escherichia coli`,
-#          pH,
-#          DBO,
-#          `Nitrogênio amoniacal`,
-#          `Nitrogênio total`,
-#          `Fósforo total`,
-#          `Temperatura água`,
-#          Turbidez,
-#          `Sólidos totais`,
-#          `Oxigênio dissolvido`)
+parametros_IQA <- plan_wide_19902020 %>%
+  select(CODIGO,
+         `Escherichia coli`,
+         pH,
+         DBO,
+         `Nitrogênio amoniacal`,
+         `Nitrogênio total`,
+         `Fósforo total`,
+         `Temperatura água`,
+         Turbidez,
+         `Sólidos totais`,
+         `Oxigênio dissolvido`)
 # 
 # 
 # mod <- lm(y ~ x, cars)
@@ -3030,6 +3034,7 @@ grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
 ```
 
 ```{r Sumário pH}
+
 (sum_pH_p1 <- plan_wide_19902020 %>%
    select(CODIGO, pH, ANO_COLETA) %>% 
    filter(ANO_COLETA>"1990" &
@@ -3804,9 +3809,10 @@ parametros_IQA %>%
 
 # install.packages("basedosdados")
 # library(basedosdados)
-# install.packages("tictoc")
-# library(tictoc)
-toc()
+
+fit = lm(plan_wide_19902020$`Oxigênio dissolvido`~ plan_wide_19902020$CODIGO)
+summary(fit)
+summary.lm(fit)
 ```
 
 
