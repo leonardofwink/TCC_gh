@@ -68,7 +68,23 @@ library(gtsummary)
 ## importando a planilha
 ```{r Importando a planilha, message = TRUE, warning = FALSE}
 
-plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+# plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+#     delim = "\t", escape_double = FALSE, 
+#     col_types = cols(Alcalinidade = col_double(), 
+#         CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
+#         COORD_GEO_LONG_GRAU = col_double(), 
+#         DATA_COLETA = col_date(format = "%d/%m/%Y"), 
+#         Nitrato = col_double(), Nitrito = col_double(), 
+#         SDT = col_double(), SST = col_double(), 
+#         `Vazão` = col_double(), `Vazão rio` = col_double()), 
+#     locale = locale(date_names = "pt", decimal_mark = ",", 
+#         grouping_mark = ""), trim_ws = TRUE)
+
+```
+
+```{r Importando a planilha2, message = TRUE, warning = FALSE}
+
+plan_wide_19902020 <- read_delim("C:/Users/maria/OneDrive/Área de Trabalho/Amor/TCC_gh/plan_wide_19902020.tsv", 
     delim = "\t", escape_double = FALSE, 
     col_types = cols(Alcalinidade = col_double(), 
         CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
@@ -82,7 +98,6 @@ plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/pl
 
 ```
 
-
 ```{r Mostrando os dados, layout="l-body-outset", echo = FALSE}
 # library(rmarkdown)
 # kable(head(plan_wide_19902020),format = "html") %>% 
@@ -91,7 +106,7 @@ plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/pl
 ```
 
 
-```{r Visualização da planilha importada}
+```{r Visualização da planilha importada, echo = FALSE}
 paged_table(plan_wide_19902020,
            options = list(rows.print = 15,
                           cols.print = 10))
@@ -119,7 +134,9 @@ paged_table(plan_wide_19902020,
 # usethis::create_github_token() criar um código pra acesso e sincronização between R e github
 
 # gitcreds::gitcreds_set() 
-
+# 
+# use_git_config(user.name = "leonardofwink",
+#                user.email = "leonardofwink@gmail.com")
 # usethis::gh_token_help()
 
 # Como mostrar os dados de um arquivo via Git/GitHub
@@ -1810,13 +1827,13 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 ```
 
 ```{r Gerando os 6 graf Ptot juntos, warning=FALSE, message=FALSE}
-ptot_p1
-ptot_p2
-ptot_p3
+# ptot_p1
+# ptot_p2
+# ptot_p3
 grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
-grid.arrange(dbo_p1, dbo_p2, dbo_p3,
-             iqa_dbo1, iqa_dbo2, iqa_dbo3,
-             ncol = 3, nrow=2)
+# grid.arrange(dbo_p1, dbo_p2, dbo_p3,
+#              ptot_p1, ptot_p2, ptot_p3,
+#              ncol = 3, nrow=2)
 ```
 
 ```{r Sumário Fósforo total}
