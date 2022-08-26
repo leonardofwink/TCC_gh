@@ -12,11 +12,14 @@ output:
     toc_float:
       collapsed: no
       smooth_scroll: no
+    fig_width: 8.26772
+    fig_height: 5.8700787
+    fig_caption: yes
   pdf_document:
     toc: yes
 always_allow_html: yes
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r Rotina pra toda vez que abrir o documento, echo = FALSE}
@@ -27,6 +30,10 @@ editor_options:
 
 # Anotações de coisas por fazer:
 
+* Descobrir como colocar as estações no sentido correto montante -> jusante
+
+> 87398500, 87398980, 87398900, 87398950, 87405500, 87406900, 87409900
+
 * Aprender a segmentar o meu dataset por períodos
 * aprender a criar uma nova coluna com a segmentação dos períodos
 * aprender a colocar a legenda dentro do gráfico
@@ -34,6 +41,8 @@ editor_options:
 * corrigir os valores 0 de IQA pra NA
 * descobrir como conseguir a equação do lm
 * aprender a pivotar o sumário
+* descobrir se há outros TCCs com disponibilização de códigos
+
 
 
 | 1990-2000 | 2000-2010 | 2010-2020 |
@@ -66,7 +75,7 @@ library(gtsummary)
 ```
 
 ## importando a planilha
-```{r Importando a planilha, message = TRUE, warning = FALSE}
+```{r Importando a planilha, echo = FALSE, message = TRUE, warning = FALSE}
 
 # plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
 #     delim = "\t", escape_double = FALSE, 
@@ -92,7 +101,7 @@ plan_wide_19902020 <- read_delim("C:/Users/maria/OneDrive/Área de Trabalho/Amor
         DATA_COLETA = col_date(format = "%d/%m/%Y"), 
         Nitrato = col_double(), Nitrito = col_double(), 
         SDT = col_double(), SST = col_double(), 
-        `Vazão` = col_double(), `Vazão rio` = col_double()), 
+        `Vazao` = col_double(), `Vazao rio` = col_double()), 
     locale = locale(date_names = "pt", decimal_mark = ",", 
         grouping_mark = ""), trim_ws = TRUE)
 
@@ -168,7 +177,7 @@ paged_table(plan_wide_19902020,
 
 ### Oxigênio Dissolvido
 
-```{r Gráfico OD periodo 1, echo = TRUE, warning=FALSE, message = FALSE}
+```{r Gráfico OD periodo 1, echo = FALSE, warning=FALSE, message = FALSE}
 (od_p1 <-ggplot(plan_wide_19902020 %>% 
                        filter(ANO_COLETA>"1990" &
                               ANO_COLETA<="2000"),
@@ -226,6 +235,7 @@ paged_table(plan_wide_19902020,
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 11,
                       limits = c(-1,21))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -308,6 +318,7 @@ paged_table(plan_wide_19902020,
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 11,
                       limits = c(-1,21))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -390,6 +401,7 @@ paged_table(plan_wide_19902020,
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 11,
                       limits = c(-1,21))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -610,7 +622,8 @@ parametros_IQA <- plan_wide_19902020 %>%
          `Temperatura água`,
          Turbidez,
          `Sólidos totais`,
-         `Oxigênio dissolvido`)
+         `Oxigênio dissolvido`,
+         Condutividade)
 # 
 # 
 # mod <- lm(y ~ x, cars)
@@ -700,6 +713,7 @@ parametros_IQA <- plan_wide_19902020 %>%
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -783,6 +797,7 @@ parametros_IQA <- plan_wide_19902020 %>%
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -867,6 +882,7 @@ parametros_IQA <- plan_wide_19902020 %>%
    scale_y_continuous(expand = expansion(mult = c(0,0)), #expandir o limite max de visualização do dado em x%
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    # coord_cartesian(ylim = c(2,98))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
@@ -1057,6 +1073,7 @@ plan_wide_19902020 %>%
                       n.breaks = 8,
                       limits = c(1,100),
                       trans = "log10")+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1139,6 +1156,7 @@ plan_wide_19902020 %>%
                       n.breaks = 8,
                       limits = c(1,100),
                       trans = "log10")+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1220,6 +1238,7 @@ plan_wide_19902020 %>%
                       n.breaks = 8,
                       limits = c(1,100),
                       trans = "log10")+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1301,6 +1320,7 @@ plan_wide_19902020 %>%
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1383,6 +1403,7 @@ plan_wide_19902020 %>%
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1465,6 +1486,7 @@ plan_wide_19902020 %>%
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1640,6 +1662,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3,
                       limits = c(min(plan_wide_19902020$`Fósforo total`, na.rm = TRUE),
                                  max(plan_wide_19902020$`Fósforo total`), na.rm = TRUE),
                       trans = "log10")+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1722,6 +1745,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3,
                       limits = c(min(plan_wide_19902020$`Fósforo total`, na.rm = TRUE),
                                  max(plan_wide_19902020$`Fósforo total`), na.rm = TRUE),
                       trans = "log10")+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1804,6 +1828,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3,
                       limits = c(min(plan_wide_19902020$`Fósforo total`, na.rm = TRUE),
                                  max(plan_wide_19902020$`Fósforo total`), na.rm = TRUE),
                       trans = "log10")+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -1961,6 +1986,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2045,6 +2071,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2129,6 +2156,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2291,6 +2319,7 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
                       labels = scales::number_format(accuracy = .001,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
     geom_smooth(method = "lm",
                 se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                 aes(group=1),
@@ -2360,6 +2389,7 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
                       labels = scales::number_format(accuracy = .001,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
     geom_smooth(method = "lm",
                 se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                 aes(group=1),
@@ -2429,6 +2459,7 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
                       labels = scales::number_format(accuracy = .001,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
     geom_smooth(method = "lm",
                 se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                 aes(group=1),
@@ -2589,6 +2620,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2658,6 +2690,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2727,6 +2760,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2886,6 +2920,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -2953,6 +2988,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3020,6 +3056,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3175,6 +3212,7 @@ grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3236,6 +3274,7 @@ grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3297,6 +3336,7 @@ grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3469,6 +3509,7 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3552,6 +3593,7 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3635,6 +3677,7 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 6,
                       limits = c(-1,101))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
@@ -3832,4 +3875,66 @@ summary(fit)
 summary.lm(fit)
 ```
 
+### Condutividade elétrica
 
+```{r Código Gráfico CondElet periodo1, warning = FALSE, message = FALSE}
+(Cond_elet_p1 <- ggplot(plan_wide_19902020 %>% 
+                        filter(ANO_COLETA>"1990" &
+                               ANO_COLETA<="2000"),
+                      aes(CODIGO,
+                          Condutividade))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=500,
+            ymax=Inf,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=500,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Condutividade elétrica no período 1990-2000",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
+                      n.breaks = 8,
+                      limits = c(0,
+                             max(plan_wide_19902020$Condutividade, na.rm = TRUE)),
+                      labels = scales::number_format(accuracy = 1,
+                                                     decimal.mark = ",",
+                                                     big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Pior Classe"="#ac5079",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 1"="#8dcdeb"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1),
+   #                                               lwd=c(2,2,2),
+   #                                               shape=c(NA,NA,NA),
+   #                                               alpha=1)))+
+   theme_classic())
+```
