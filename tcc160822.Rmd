@@ -3061,13 +3061,10 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
 ```
 
 ```{r Gerando os 6 graf pH juntos, warning=FALSE, message=FALSE}
-pH_p1
-pH_p2
-pH_p3
 grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
-# grid.arrange(dbo_p1, dbo_p2, dbo_p3,
-#              iqa_dbo1, iqa_dbo2, iqa_dbo3,
-#              ncol = 3, nrow=2)
+grid.arrange(namon_p1, namon_p2, namon_p3,
+             pH_p1, pH_p2, pH_p3,
+             ncol = 3, nrow=2)
 ```
 
 ```{r Sumário pH}
