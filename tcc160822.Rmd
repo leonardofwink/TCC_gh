@@ -15,11 +15,16 @@ output:
     fig_width: 8.26772
     fig_height: 5.8700787
     fig_caption: yes
+    code_download: true
   pdf_document:
     toc: yes
+  word_document: 
+    toc: yes
+    keep_md: yes
 always_allow_html: yes
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
+fig.align: center
 ---
 
 ```{r Rotina pra toda vez que abrir o documento, echo = FALSE}
@@ -30,18 +35,19 @@ editor_options:
 
 # Anotações de coisas por fazer:
 
-* Descobrir como colocar as estações no sentido correto montante -> jusante
+* Descobrir como colocar as estações no sentido correto montante -> jusante nos sumários
 
 > 87398500, 87398980, 87398900, 87398950, 87405500, 87406900, 87409900
 
-* Aprender a segmentar o meu dataset por períodos
-* aprender a criar uma nova coluna com a segmentação dos períodos
+* ~~Aprender a segmentar o meu dataset por períodos~~
+* ~~aprender a criar uma nova coluna com a segmentação dos períodos~~
 * aprender a colocar a legenda dentro do gráfico
   * reduzir o tamanho da legenda
-* corrigir os valores 0 de IQA pra NA
+* ~~corrigir os valores 0 de IQA pra NA~~
 * descobrir como conseguir a equação do lm
-* aprender a pivotar o sumário
+* ~~aprender a pivotar o sumário~~ -> meu sumário do google docs ta batendo direitinho com o do R
 * descobrir se há outros TCCs com disponibilização de códigos
+* correlação forte entre condutividade e Namon/Ptot/DBO
 
 
 
@@ -177,7 +183,7 @@ paged_table(plan_wide_19902020,
 
 ### Oxigênio Dissolvido
 
-```{r Gráfico OD periodo 1, echo = FALSE, warning=FALSE, message = FALSE}
+```{r Gráfico OD periodo 1, echo = FALSE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2000"}
 (od_p1 <-ggplot(plan_wide_19902020 %>% 
                        filter(ANO_COLETA>"1990" &
                               ANO_COLETA<="2000"),
@@ -425,22 +431,14 @@ paged_table(plan_wide_19902020,
    theme_classic())
 ```
 
-```{r Gerando os 3 gráficos de OD juntos, echo = FALSE, warning=FALSE, message = FALSE}
-# grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
+```{r Gerando os 3 gráficos de OD juntos, echo = TRUE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2020", fig.dim=c(24.80316, 5.8700787)}
+grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
 # summary(plan_wide_19902020 %>%
 #           select(CODIGO,
 #                  `Oxigênio dissolvido`),
 #         filter(ANO_COLETA>"2010" &
 #                  ANO_COLETA<="2020"))
 
-# plan_wide_19902020 %>%
-#   select(CODIGO, `Oxigênio dissolvido`, ANO_COLETA) %>% 
-#   filter(ANO_COLETA>"2010" &
-#            ANO_COLETA<="2020") %>% 
-#   tbl_summary(by = ANO_COLETA) %>% 
-#   add_overall() %>% 
-#   add_n() %>% 
-#   add_stat()
 ```
 
 ```{r Gráfico OD_chernobyl, echo = FALSE, warning=FALSE, message = FALSE}
@@ -1511,13 +1509,10 @@ plan_wide_19902020 %>%
 ```
 
 ```{r Gerando os 6 graf DBO juntos, warning=FALSE, message=FALSE}
-# iqa_dbo1
-# iqa_dbo2
-# iqa_dbo3
-# grid.arrange(iqaod1, iqaod2, iqaod3, ncol = 3)
-grid.arrange(dbo_p1, dbo_p2, dbo_p3,
-             iqa_dbo1, iqa_dbo2, iqa_dbo3,
-             ncol = 3, nrow=2)
+grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
+# grid.arrange(dbo_p1, dbo_p2, dbo_p3,
+#              iqa_dbo1, iqa_dbo2, iqa_dbo3,
+#              ncol = 3, nrow=2)
 ```
 
 ```{r Sumário DBO}
@@ -1852,13 +1847,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 ```
 
 ```{r Gerando os 6 graf Ptot juntos, warning=FALSE, message=FALSE}
-# ptot_p1
-# ptot_p2
-# ptot_p3
 grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
-# grid.arrange(dbo_p1, dbo_p2, dbo_p3,
-#              ptot_p1, ptot_p2, ptot_p3,
-#              ncol = 3, nrow=2)
 ```
 
 ```{r Sumário Fósforo total}
@@ -2179,13 +2168,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
 ```
 
 ```{r Gerando os 6 graf ecoli juntos, warning=FALSE, message=FALSE}
-ecoli_p1
-ecoli_p2
-ecoli_p3
 grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
-# grid.arrange(dbo_p1, dbo_p2, dbo_p3,
-#              iqa_dbo1, iqa_dbo2, iqa_dbo3,
-#              ncol = 3, nrow=2)
 ```
 
 ```{r Sumário Ecoli}
@@ -3450,6 +3433,9 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
 ### IQA
 
 ```{r Gráfico IQA periodo1, echo = FALSE, message=FALSE, warning=FALSE}
+plan_wide_19902020 <- plan_wide_19902020 %>% 
+   mutate(IQA = ifelse(IQA == 0, NA, IQA))
+
 (iqa_p1 <-ggplot(plan_wide_19902020 %>% 
                           filter(ANO_COLETA > "1990" &
                                  ANO_COLETA <= "2000"),
@@ -3702,10 +3688,7 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
 ```
 
 ```{r Gerando os 6 graf IQA juntos, warning=FALSE, message=FALSE}
-SolTot_p1
-SolTot_p2
-SolTot_p3
-grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
+grid.arrange(iqa_p1, iqa_p2, iqa_p3, ncol = 3)
 # grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 #              iqa_dbo1, iqa_dbo2, iqa_dbo3,
 #              ncol = 3, nrow=2)
@@ -3787,7 +3770,9 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
                 na.rm = TRUE),
      max = 
        max(IQA, 
-           na.rm = TRUE))
+           na.rm = TRUE),
+     n = 
+      length(IQA))
 )
 
 plan_wide_19902020 %>% 
@@ -3867,12 +3852,15 @@ parametros_IQA %>%
     label = TRUE,
     label_alpha = TRUE)
 
-# install.packages("basedosdados")
-# library(basedosdados)
 
 fit = lm(plan_wide_19902020$`Oxigênio dissolvido`~ plan_wide_19902020$CODIGO)
 summary(fit)
 summary.lm(fit)
+
+plan_wide_19902020$IQA
+
+plan_wide_19902020 <- plan_wide_19902020 %>% 
+   mutate(IQA = ifelse(IQA == 0, NA, IQA))
 ```
 
 ### Condutividade elétrica
