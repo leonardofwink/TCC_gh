@@ -12,8 +12,8 @@ output:
     toc_float:
       collapsed: no
       smooth_scroll: no
-    fig_width: 8.26772
-    fig_height: 5.8700787
+    fig_width: 9
+    fig_height: 6
     fig_caption: yes
     code_download: true
   pdf_document:
@@ -431,7 +431,7 @@ paged_table(plan_wide_19902020,
    theme_classic())
 ```
 
-```{r Gerando os 3 gráficos de OD juntos, echo = TRUE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2020", fig.dim=c(24.80316, 5.8700787)}
+```{r Gráfico OD 3 periodos juntos, echo = TRUE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2020"}
 grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
 # summary(plan_wide_19902020 %>%
 #           select(CODIGO,
@@ -609,19 +609,19 @@ grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
 
 
 
-parametros_IQA <- plan_wide_19902020 %>%
-  select(CODIGO,
-         `Escherichia coli`,
-         pH,
-         DBO,
-         `Nitrogênio amoniacal`,
-         `Nitrogênio total`,
-         `Fósforo total`,
-         `Temperatura água`,
-         Turbidez,
-         `Sólidos totais`,
-         `Oxigênio dissolvido`,
-         Condutividade)
+# parametros_IQA <- plan_wide_19902020 %>%
+#   select(CODIGO,
+#          `Escherichia coli`,
+#          pH,
+#          DBO,
+#          `Nitrogênio amoniacal`,
+#          `Nitrogênio total`,
+#          `Fósforo total`,
+#          `Temperatura água`,
+#          Turbidez,
+#          `Sólidos totais`,
+#          `Oxigênio dissolvido`,
+#          Condutividade)
 # 
 # 
 # mod <- lm(y ~ x, cars)
@@ -905,7 +905,7 @@ parametros_IQA <- plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Gerando os 6 graf OD juntos, warning=FALSE, message=FALSE}
+```{r Gráfico OD_IQA 6 periodos juntos, warning=FALSE, message=FALSE}
 iqaod1 <- iqaod_1990_2000
 iqaod2 <- iqaod_2000_2010
 iqaod3 <- iqaod_2010_2020
@@ -1012,7 +1012,7 @@ plan_wide_19902020 %>%
 
 ### Demanda Bioquímica de Oxigênio
 
-```{r Código Gráfico DBO período1, echo = FALSE, warning = FALSE, message = FALSE}
+```{r Gráfico DBO período1, echo = FALSE, warning = FALSE, message = FALSE}
 (dbo_p1<-ggplot(plan_wide_19902020 %>% 
                   filter(ANO_COLETA>"1990" &
                         ANO_COLETA<="2000"),
@@ -1095,7 +1095,7 @@ plan_wide_19902020 %>%
 
 ```
 
-```{r Código Gráfico DBO período2, echo = FALSE, warning = FALSE, message = FALSE}
+```{r Gráfico DBO período2, echo = FALSE, warning = FALSE, message = FALSE}
 (dbo_p2<-ggplot(plan_wide_19902020 %>% 
                   filter(ANO_COLETA>"2000" &
                         ANO_COLETA<="2010"),
@@ -1177,7 +1177,7 @@ plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Código Gráfico DBO período3, echo = FALSE, warning = FALSE, message = FALSE}
+```{r Gráfico DBO período3, echo = FALSE, warning = FALSE, message = FALSE}
 (dbo_p3<-ggplot(plan_wide_19902020 %>% 
                   filter(ANO_COLETA>"2010" &
                         ANO_COLETA<="2020"),
@@ -1259,7 +1259,7 @@ plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Gráfico IQA DBO periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico IQA DBO periodo1, echo = FALSE, warning = FALSE, message = FALSE}
 (iqa_dbo1<-ggplot(plan_wide_19902020 %>% 
                   filter(ANO_COLETA>"1990" &
                         ANO_COLETA<="2000"),
@@ -1342,7 +1342,7 @@ plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Gráfico IQA DBO periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico IQA DBO periodo2, echo = FALSE, warning = FALSE, message = FALSE}
 (iqa_dbo2<-ggplot(plan_wide_19902020%>% 
                   filter(ANO_COLETA>"2000" &
                         ANO_COLETA<="2010"),
@@ -1425,7 +1425,7 @@ plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Gráfico IQA DBO periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico IQA DBO periodo3, echo = FALSE, warning = FALSE, message = FALSE}
 (iqa_dbo3<-ggplot(plan_wide_19902020%>% 
                   filter(ANO_COLETA>"2010" &
                         ANO_COLETA<="2020"),
@@ -1508,7 +1508,7 @@ plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Gerando os 6 graf DBO juntos, warning=FALSE, message=FALSE}
+```{r Gráfico DBO 3 periodos juntos, warning=FALSE, message=FALSE}
 grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
 # grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 #              iqa_dbo1, iqa_dbo2, iqa_dbo3,
@@ -1597,7 +1597,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
 
 ### Fósforo total
 
-```{r Código Gráfico Fósforo total periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico Fósforo total periodo1, warning = FALSE, message = FALSE}
 (ptot_p1<-ggplot(plan_wide_19902020%>% 
                    filter(ANO_COLETA>"1990" &
                             ANO_COLETA<="2000"),
@@ -1680,7 +1680,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
 
 ```
 
-```{r Código Gráfico Fósforo total periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico Fósforo total periodo2, warning = FALSE, message = FALSE}
 (ptot_p2 <- ggplot(plan_wide_19902020%>% 
                      filter(ANO_COLETA>"2000" &
                               ANO_COLETA<="2010"),
@@ -1763,7 +1763,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
 
 ```
 
-```{r Código Gráfico Fósforo total periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico Fósforo total periodo3, warning = FALSE, message = FALSE}
 (ptot_p3 <- ggplot(plan_wide_19902020%>% 
                    filter(ANO_COLETA>"2010" &
                             ANO_COLETA<="2020"),
@@ -1846,7 +1846,7 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
 
 ```
 
-```{r Gerando os 6 graf Ptot juntos, warning=FALSE, message=FALSE}
+```{r Gráfico Ptot 3 periodos juntos, warning=FALSE, message=FALSE}
 grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
 ```
 
@@ -1912,7 +1912,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
 
 ### Escherichia coli
 
-```{r Código Gráfico Ecoli periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico Ecoli periodo1, warning = FALSE, message = FALSE}
 (ecoli_p1 <- ggplot(plan_wide_19902020 %>% 
                       filter(ANO_COLETA>"1990" &
                              ANO_COLETA<="2000"),
@@ -1997,7 +1997,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Código Gráfico Ecoli periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico Ecoli periodo2, warning = FALSE, message = FALSE}
 (ecoli_p2 <- ggplot(plan_wide_19902020 %>% 
                       filter(ANO_COLETA>"2000" &
                              ANO_COLETA<="2010"),
@@ -2082,7 +2082,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Código Gráfico Ecoli periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico Ecoli periodo3, warning = FALSE, message = FALSE}
 (ecoli_p3 <- ggplot(plan_wide_19902020 %>% 
                       filter(ANO_COLETA>"2010" &
                              ANO_COLETA<="2020"),
@@ -2167,7 +2167,7 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Gerando os 6 graf ecoli juntos, warning=FALSE, message=FALSE}
+```{r Gráfico ecoli 3 periodos juntos, warning=FALSE, message=FALSE}
 grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
 ```
 
@@ -2253,7 +2253,7 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
 
 ### Nitrogênio amoniacal
 
-```{r Código Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
 (namon_p1 <- ggplot(plan_wide_19902020 %>% 
                       filter(ANO_COLETA>"1990" &
                              ANO_COLETA<="2000"),
@@ -2323,7 +2323,7 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
     theme_classic())
 ```
 
-```{r Código Gráfico Nitrogênio total periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico Nitrogênio total periodo2, warning = FALSE, message = FALSE}
 (namon_p2 <- ggplot(plan_wide_19902020 %>% 
                       filter(ANO_COLETA>"2000" &
                              ANO_COLETA<="2010"),
@@ -2393,7 +2393,7 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
     theme_classic())
 ```
 
-```{r Código Gráfico Nitrogênio total periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico Nitrogênio total periodo3, warning = FALSE, message = FALSE}
 (namon_p3 <- ggplot(plan_wide_19902020 %>% 
                       filter(ANO_COLETA>"2010" &
                              ANO_COLETA<="2020"),
@@ -2463,10 +2463,10 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
     theme_classic())
 ```
 
-```{r Gerando os 6 graf namon juntos, warning=FALSE, message=FALSE}
-namon_p1
-namon_p2
-namon_p3
+```{r Gráfico Namon 3 periodos juntos, warning=FALSE, message=FALSE}
+# namon_p1
+# namon_p2
+# namon_p3
 grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
 # grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 #              iqa_dbo1, iqa_dbo2, iqa_dbo3,
@@ -2553,8 +2553,9 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
 )
 ```
 
+
 ### Turbidez
-```{r Código Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
 (turb_p1 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"1990" &
                                ANO_COLETA<="2000"),
@@ -2624,7 +2625,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Código Gráfico Turbidez periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico Turbidez periodo2, warning = FALSE, message = FALSE}
 (turb_p2 <- ggplot(plan_wide_19902020 %>% 
                      filter(ANO_COLETA>"2000" &
                             ANO_COLETA<="2010"),
@@ -2694,7 +2695,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Código Gráfico Turbidez periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico Turbidez periodo3, warning = FALSE, message = FALSE}
 (turb_p3 <- ggplot(plan_wide_19902020 %>% 
                      filter(ANO_COLETA>"2010" &
                             ANO_COLETA<="2020"),
@@ -2764,10 +2765,10 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Gerando os 6 graf turb juntos, warning=FALSE, message=FALSE}
-turb_p1
-turb_p2
-turb_p3
+```{r Gráfico turb 3 periodos juntos, warning=FALSE, message=FALSE}
+# turb_p1
+# turb_p2
+# turb_p3
 grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
 # grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 #              iqa_dbo1, iqa_dbo2, iqa_dbo3,
@@ -2856,7 +2857,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
 
 
 ### pH
-```{r Código Gráfico pH periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico pH periodo1, warning = FALSE, message = FALSE}
 (pH_p1 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"1990" &
                                ANO_COLETA<="2000"),
@@ -2924,7 +2925,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Código Gráfico pH periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico pH periodo2, warning = FALSE, message = FALSE}
 (pH_p2 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"2000" &
                                ANO_COLETA<="2010"),
@@ -2992,7 +2993,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Código Gráfico pH periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico pH periodo3, warning = FALSE, message = FALSE}
 (pH_p3 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"2010" &
                                ANO_COLETA<="2020"),
@@ -3060,7 +3061,7 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
    theme_classic())
 ```
 
-```{r Gerando os 6 graf pH juntos, warning=FALSE, message=FALSE}
+```{r Gráfico pH 3 periodos juntos, warning=FALSE, message=FALSE}
 grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
 grid.arrange(namon_p1, namon_p2, namon_p3,
              pH_p1, pH_p2, pH_p3,
@@ -3151,7 +3152,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3,
 
 ### Sólidos totais
 
-```{r Código Gráfico SólTot periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico SólTot periodo1, warning = FALSE, message = FALSE}
 (SolTot_p1 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"1990" &
                                ANO_COLETA<="2000"),
@@ -3213,7 +3214,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3,
    theme_classic())
 ```
 
-```{r Código Gráfico SólTot periodo2, warning = FALSE, message = FALSE}
+```{r Gráfico SólTot periodo2, warning = FALSE, message = FALSE}
 (SolTot_p2 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"2000" &
                                ANO_COLETA<="2010"),
@@ -3275,7 +3276,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3,
    theme_classic())
 ```
 
-```{r Código Gráfico SólTot periodo3, warning = FALSE, message = FALSE}
+```{r Gráfico SólTot periodo3, warning = FALSE, message = FALSE}
 (SolTot_p3 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"2010" &
                                ANO_COLETA<="2020"),
@@ -3337,7 +3338,7 @@ grid.arrange(namon_p1, namon_p2, namon_p3,
    theme_classic())
 ```
 
-```{r Gerando os 6 graf SólTot juntos, warning=FALSE, message=FALSE}
+```{r Gráfico SólTot 3 periodos juntos, warning=FALSE, message=FALSE}
 SolTot_p1
 SolTot_p2
 SolTot_p3
@@ -3684,7 +3685,7 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
    theme_classic())
 ```
 
-```{r Gerando os 6 graf IQA juntos, warning=FALSE, message=FALSE}
+```{r Gráfico IQA 3 periodos juntos, warning=FALSE, message=FALSE}
 grid.arrange(iqa_p1, iqa_p2, iqa_p3, ncol = 3)
 # grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 #              iqa_dbo1, iqa_dbo2, iqa_dbo3,
@@ -3842,13 +3843,6 @@ plan_wide_19902020 %>%
 
 # install.packages("GGally")
 
-library(GGally)
-parametros_IQA %>% 
-  select(-`Nitrogênio amoniacal`, -CODIGO) %>% 
-  ggcorr(method = "complete.obs",
-    label = TRUE,
-    label_alpha = TRUE)
-
 
 fit = lm(plan_wide_19902020$`Oxigênio dissolvido`~ plan_wide_19902020$CODIGO)
 summary(fit)
@@ -3860,9 +3854,32 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
    mutate(IQA = ifelse(IQA == 0, NA, IQA))
 ```
 
+### Correlação
+```{r Correlação}
+library(GGally)
+parametros_IQA <- plan_wide_19902020 %>%
+  select(CODIGO,
+         `Escherichia coli`,
+         pH,
+         DBO,
+         `Nitrogênio amoniacal`,
+         `Nitrogênio total`,
+         `Fósforo total`,
+         `Temperatura água`,
+         Turbidez,
+         `Sólidos totais`,
+         `Oxigênio dissolvido`,
+         Condutividade)
+parametros_IQA %>% 
+  select(-`Nitrogênio amoniacal`, -CODIGO) %>% 
+  ggcorr(method = "complete.obs",
+    label = TRUE,
+    label_alpha = TRUE)
+```
+
 ### Condutividade elétrica
 
-```{r Código Gráfico CondElet periodo1, warning = FALSE, message = FALSE}
+```{r Gráfico CondElet periodo1, warning = FALSE, message = FALSE}
 (Cond_elet_p1 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"1990" &
                                ANO_COLETA<="2000"),
@@ -3922,4 +3939,13 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
    #                                               shape=c(NA,NA,NA),
    #                                               alpha=1)))+
    theme_classic())
+```
+
+## Salvando os gráficos
+```{r Salvando os gráficos}
+# ggsave("od_p1.png",
+#        plot = od_p1,
+#        width = 13,
+#        height = 10,
+#        dpi = 300)
 ```
