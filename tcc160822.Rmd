@@ -12,8 +12,8 @@ output:
     toc_float:
       collapsed: no
       smooth_scroll: no
-    fig_width: 9
-    fig_height: 6
+    fig_width: 10
+    fig_height: 6.66
     fig_caption: yes
     code_download: true
   pdf_document:
@@ -36,6 +36,7 @@ fig.align: center
 # Anotações de coisas por fazer:
 
 * Descobrir como colocar as estações no sentido correto montante -> jusante nos sumários
+* not entirely necessary pq tenho os sumários mais aprimorados ainda no excel.
 
 > 87398500, 87398980, 87398900, 87398950, 87405500, 87406900, 87409900
 
@@ -83,7 +84,23 @@ library(gtsummary)
 ## importando a planilha
 ```{r Importando a planilha, echo = FALSE, message = TRUE, warning = FALSE}
 
-# plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv", 
+plan_wide_19902020 <- read_delim("C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/plan_wide_19902020.tsv",
+    delim = "\t", escape_double = FALSE,
+    col_types = cols(Alcalinidade = col_double(),
+        CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(),
+        COORD_GEO_LONG_GRAU = col_double(),
+        DATA_COLETA = col_date(format = "%d/%m/%Y"),
+        Nitrato = col_double(), Nitrito = col_double(),
+        SDT = col_double(), SST = col_double(),
+        `Vazão` = col_double(), `Vazão rio` = col_double()),
+    locale = locale(date_names = "pt", decimal_mark = ",",
+        grouping_mark = ""), trim_ws = TRUE)
+
+```
+
+```{r Importando a planilha2, message = TRUE, warning = FALSE}
+# 
+# plan_wide_19902020 <- read_delim("C:/Users/maria/OneDrive/Área de Trabalho/Amor/TCC_gh/plan_wide_19902020.tsv", 
 #     delim = "\t", escape_double = FALSE, 
 #     col_types = cols(Alcalinidade = col_double(), 
 #         CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
@@ -91,25 +108,9 @@ library(gtsummary)
 #         DATA_COLETA = col_date(format = "%d/%m/%Y"), 
 #         Nitrato = col_double(), Nitrito = col_double(), 
 #         SDT = col_double(), SST = col_double(), 
-#         `Vazão` = col_double(), `Vazão rio` = col_double()), 
+#         `Vazao` = col_double(), `Vazao rio` = col_double()), 
 #     locale = locale(date_names = "pt", decimal_mark = ",", 
 #         grouping_mark = ""), trim_ws = TRUE)
-
-```
-
-```{r Importando a planilha2, message = TRUE, warning = FALSE}
-
-plan_wide_19902020 <- read_delim("C:/Users/maria/OneDrive/Área de Trabalho/Amor/TCC_gh/plan_wide_19902020.tsv", 
-    delim = "\t", escape_double = FALSE, 
-    col_types = cols(Alcalinidade = col_double(), 
-        CODIGO = col_character(), COORD_GEO_LAT_GRAU = col_double(), 
-        COORD_GEO_LONG_GRAU = col_double(), 
-        DATA_COLETA = col_date(format = "%d/%m/%Y"), 
-        Nitrato = col_double(), Nitrito = col_double(), 
-        SDT = col_double(), SST = col_double(), 
-        `Vazao` = col_double(), `Vazao rio` = col_double()), 
-    locale = locale(date_names = "pt", decimal_mark = ",", 
-        grouping_mark = ""), trim_ws = TRUE)
 
 ```
 
@@ -248,8 +249,10 @@ paged_table(plan_wide_19902020,
                alpha=.5,
                na.rm = TRUE,
                size = 1)+
-   # geom_line(aes(color="red"),
-   #           alpha=.0)+
+   #  geom_line(
+   #     aes(color="red"),
+   #     alpha=.0,
+   # )+
    # scale_color_manual("Legenda",
    #                    guide="legend",
    #                    values = c("Classe 1"="#8dcdeb",
@@ -438,6 +441,57 @@ grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
 #                  `Oxigênio dissolvido`),
 #         filter(ANO_COLETA>"2010" &
 #                  ANO_COLETA<="2020"))
+```
+
+```{r Salvando OD}
+ggsave("od_p1.png",
+       plot = od_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("od_p2.png",
+       plot = od_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("od_p3.png",
+       plot = od_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+# ```{excel}
+# IFERROR(
+#    TEXT(
+#       IF(WEEKDAY($A1) = COLUMN(); 1;
+#          IF(
+#             ABS(
+#                INDIRECT(D3)>0; 
+#                D3+1; 
+#                "")));
+#       "dd")
+# )
+# 
+# =IFERROR(
+#    if(WEEKDAY($A1) = COLUMN();
+#       1;
+#       if(
+#          ABS(F3) > 0;
+#          F3+1;
+#          "")
+#    );""
+# )
+# 
+# =iferror(
+#    SMALL(
+#       unique($B$1:$B$32);
+#       right(G1;1)
+#    )
+#    ;""
+# )
 
 ```
 
@@ -3948,4 +4002,7 @@ parametros_IQA %>%
 #        width = 13,
 #        height = 10,
 #        dpi = 300)
+
+
+###testeeeeeeeee
 ```
