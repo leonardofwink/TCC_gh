@@ -462,37 +462,6 @@ ggsave("od_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
-
-# ```{excel}
-# IFERROR(
-#    TEXT(
-#       IF(WEEKDAY($A1) = COLUMN(); 1;
-#          IF(
-#             ABS(
-#                INDIRECT(D3)>0; 
-#                D3+1; 
-#                "")));
-#       "dd")
-# )
-# 
-# =IFERROR(
-#    if(WEEKDAY($A1) = COLUMN();
-#       1;
-#       if(
-#          ABS(F3) > 0;
-#          F3+1;
-#          "")
-#    );""
-# )
-# 
-# =iferror(
-#    SMALL(
-#       unique($B$1:$B$32);
-#       right(G1;1)
-#    )
-#    ;""
-# )
-
 ```
 
 ```{r Gráfico OD_chernobyl, echo = FALSE, warning=FALSE, message = FALSE}
@@ -1649,6 +1618,26 @@ grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3)
 )
 ```
 
+```{r Salvando DBO}
+ggsave("dbo_p1.png",
+       plot = dbo_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("dbo_p2.png",
+       plot = dbo_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("dbo_p3.png",
+       plot = dbo_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+```
 ### Fósforo total
 
 ```{r Gráfico Fósforo total periodo1, warning = FALSE, message = FALSE}
@@ -1962,6 +1951,27 @@ grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3)
     max = 
       max(`Fósforo total`, na.rm = TRUE)))
       
+```
+
+```{r Salvando Ptot}
+ggsave("ptot_p1.png",
+       plot = ptot_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("ptot_p2.png",
+       plot = ptot_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("ptot_p3.png",
+       plot = ptot_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 
 ### Escherichia coli
@@ -2305,6 +2315,26 @@ grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3)
 )
 ```
 
+```{r Salvando ecoli}
+ggsave("ecoli_p1.png",
+       plot = ecoli_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("ecoli_p2.png",
+       plot = ecoli_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("ecoli_p3.png",
+       plot = ecoli_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+```
 ### Nitrogênio amoniacal
 
 ```{r Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
@@ -2607,6 +2637,26 @@ grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
 )
 ```
 
+```{r Salvando namon}
+ggsave("namon_p1.png",
+       plot = namon_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("namon_p2.png",
+       plot = namon_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("namon_p3.png",
+       plot = namon_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+```
 
 ### Turbidez
 ```{r Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
@@ -2909,6 +2959,26 @@ grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
 ) 
 ```
 
+```{r Salvando turb}
+ggsave("turb_p1.png",
+       plot = turb_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("turb_p2.png",
+       plot = turb_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("turb_p3.png",
+       plot = turb_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+```
 
 ### pH
 ```{r Gráfico pH periodo1, warning = FALSE, message = FALSE}
@@ -3203,6 +3273,26 @@ grid.arrange(namon_p1, namon_p2, namon_p3,
 )
 ```
 
+```{r Salvando pH}
+ggsave("pH_p1.png",
+       plot = pH_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("pH_p2.png",
+       plot = pH_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("pH_p3.png",
+       plot = pH_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+```
 
 ### Sólidos totais
 
@@ -3393,16 +3483,13 @@ grid.arrange(namon_p1, namon_p2, namon_p3,
 ```
 
 ```{r Gráfico SólTot 3 periodos juntos, warning=FALSE, message=FALSE}
-SolTot_p1
-SolTot_p2
-SolTot_p3
 grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
 # grid.arrange(dbo_p1, dbo_p2, dbo_p3,
 #              iqa_dbo1, iqa_dbo2, iqa_dbo3,
 #              ncol = 3, nrow=2)
 ```
 
-```{r Sumário Sólido Total}
+```{r Sumário Sólidos Totais}
 (sum_SolTot_p1 <- plan_wide_19902020 %>%
    select(CODIGO, `Sólidos totais`, ANO_COLETA) %>% 
    filter(ANO_COLETA>"1990" &
@@ -3480,6 +3567,27 @@ grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
        max(`Sólidos totais`, 
            na.rm = TRUE))
 )
+```
+
+```{r Salvando SolTot}
+ggsave("SolTot_p1.png",
+       plot = SolTot_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("SolTot_p2.png",
+       plot = SolTot_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("SolTot_p3.png",
+       plot = SolTot_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 
 ### IQA
@@ -3851,39 +3959,147 @@ plan_wide_19902020 %>%
              na.rm = TRUE))
 ```
 
+```{r Salvando iqa}
+ggsave("iqa_p1.png",
+       plot = iqa_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+
+ggsave("iqa_p2.png",
+       plot = iqa_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("iqa_p3.png",
+       plot = iqa_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+```
+
 ## Testando coisas
 ```{r Testando coisas, include = FALSE}
-# ggplot(mtcars, aes(x=hp, y=wt)) +
-#   geom_point() +
-#   geom_smooth()
-# 
-# iris %>% 
-#   qplot(Sepal.Length, Sepal.Width, 
-#         colour = Species, fill=Species, data=.) + 
-#   geom_smooth(method=lm)
-# 
-# 
+ 
 # df111 <- data.frame(x = c(1:100))
 # glimpse(df111)
 # df111$y <- 2 + 3 * df111$x + rnorm(100, sd = 40)
-# p111 <- ggplot(data = df111, aes(x = x, y = y)) +
-#             geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-#             geom_point()
-# p111
 # 
 # lm_eqn <- function(df111){
 #     m <- lm(y ~ x, df111);
-#     eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+#     eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
 #          list(a = format(unname(coef(m)[1]), digits = 2),
 #               b = format(unname(coef(m)[2]), digits = 2),
 #              r2 = format(summary(m)$r.squared, digits = 3)))
 #     as.character(as.expression(eq));
-# }
-# 
+# } 
 # p2 <- p111 +
 #   geom_text(x = 25, y = 300,
 #             label = lm_eqn(df111),
 #             parse = TRUE)
+# p2
+# 
+# 
+# lm_eqc <- function(plan_wide_19902020){
+#    m <- lm(`Oxigênio dissolvido` ~ CODIGO, plan_wide_19902020);
+#    eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
+#                     list(a = format(unname(coef(m)[1]), digits = 2),
+#                          b = format(unname(coef(m)[2]), digits = 2),
+#                          r2 = format(summary(m)$r.squared, digits = 3)))
+#    as.character(as.expression(eq));
+# }
+#    
+# (od_p1 <-ggplot(plan_wide_19902020 %>% 
+#                    filter(ANO_COLETA>"1990" &
+#                              ANO_COLETA<="2000"),
+#                 aes(CODIGO,
+#                     `Oxigênio dissolvido`))+
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=-Inf,
+#                ymax=2,
+#                alpha=1,
+#                fill="#ac5079")+ #>pior classe
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=2,
+#                ymax=4,
+#                alpha=1,
+#                fill="#eb5661")+ #classe 4
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=4,
+#                ymax=5,
+#                alpha=1,
+#                fill="#fcf7ab")+ #classe 3
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=5,
+#                ymax=6,
+#                alpha=1,
+#                fill="#70c18c")+ #classe 2
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=6,
+#                ymax=Inf,
+#                alpha=1,
+#                fill="#8dcdeb")+ #classe 1
+#       stat_boxplot(geom = 'errorbar',
+#                    width=0.3,
+#                    position = position_dodge(width = 0.65))+
+#       geom_boxplot(fill='#F8F8FF',
+#                    color="black",
+#                    outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+#                    width= 0.7)+
+#       labs(title = "Oxigênio Dissolvido no período 1990-2000",
+#            x="Estação",
+#            y="mg/L")+
+#       # geom_jitter(width = .05,
+#       #             alpha=.2,
+#       #             size=1.5,
+#       #             color="black")+
+#       scale_y_continuous(expand = expansion(mult = c(0,0)),
+#                          n.breaks = 11,
+#                          limits = c(-1,21))+
+#       scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
+#       geom_smooth(method = "lm",
+#                   se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+#                   aes(group=1),
+#                   alpha=.5,
+#                   na.rm = TRUE,
+#                   size = 1)+
+#       # geom_text(aes(x = "87405500", y = 15),
+#       #           label = lm_eqc(plan_wide_19902020),
+#       #           parse = TRUE,
+#       #           inherit.aes = TRUE,
+#       #           check_overlap = TRUE)+
+#       #  geom_line(
+#       #     aes(color="red"),
+#       #     alpha=.0,
+#       # )+
+#       # scale_color_manual("Legenda",
+#       #                    guide="legend",
+#       #                    values = c("Classe 1"="#8dcdeb",
+#       #                               "Classe 2"="#70c18c",
+#       #                               "Classe 3"="#fcf7ab",
+#       #                               "Classe 4"="#eb5661",
+#       #                               "Pior Classe"="#ac5079"))+
+#    # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+#    #                                               lwd=c(2,2,2,2,2),
+#    #                                               shape=c(NA,NA,NA,NA,NA),
+#    #                                               alpha=1)))+
+#       theme(legend.position = "bottom")+
+#       theme_classic())
+
+# list1111 <- sessionInfo()
+# list1111$loadedOnly
 
 # install.packages("ggpmisc")
 # library(ggpmisc)
@@ -3898,14 +4114,16 @@ plan_wide_19902020 %>%
 # install.packages("GGally")
 
 
-fit = lm(plan_wide_19902020$`Oxigênio dissolvido`~ plan_wide_19902020$CODIGO)
-summary(fit)
-summary.lm(fit)
+# fit = lm(plan_wide_19902020$`Oxigênio dissolvido`~ plan_wide_19902020$CODIGO)
+# summary(fit)
+# summary.lm(fit)
+# 
+# plan_wide_19902020$IQA
+# 
+# plan_wide_19902020 <- plan_wide_19902020 %>% 
+#    mutate(IQA = ifelse(IQA == 0, NA, IQA))
+# pacman::p_load(esquisse)
 
-plan_wide_19902020$IQA
-
-plan_wide_19902020 <- plan_wide_19902020 %>% 
-   mutate(IQA = ifelse(IQA == 0, NA, IQA))
 ```
 
 ### Correlação
@@ -3924,8 +4142,9 @@ parametros_IQA <- plan_wide_19902020 %>%
          `Sólidos totais`,
          `Oxigênio dissolvido`,
          Condutividade)
+
 parametros_IQA %>% 
-  select(-`Nitrogênio amoniacal`, -CODIGO) %>% 
+  select(-CODIGO) %>% 
   ggcorr(method = "complete.obs",
     label = TRUE,
     label_alpha = TRUE)
@@ -3933,8 +4152,8 @@ parametros_IQA %>%
 
 ### Condutividade elétrica
 
-```{r Gráfico CondElet periodo1, warning = FALSE, message = FALSE}
-(Cond_elet_p1 <- ggplot(plan_wide_19902020 %>% 
+```{r Gráfico cond_elet periodo1, warning = FALSE, message = FALSE}
+(cond_elet_p1 <- ggplot(plan_wide_19902020 %>% 
                         filter(ANO_COLETA>"1990" &
                                ANO_COLETA<="2000"),
                       aes(CODIGO,
@@ -3995,14 +4214,24 @@ parametros_IQA %>%
    theme_classic())
 ```
 
-## Salvando os gráficos
-```{r Salvando os gráficos}
-# ggsave("od_p1.png",
-#        plot = od_p1,
-#        width = 13,
-#        height = 10,
-#        dpi = 300)
 
+```{r Salvando cond_elet}
+ggsave("cond_elet_p1.png",
+       plot = cond_elet_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 
-###testeeeeeeeee
+# ggsave("cond_elet_p2.png",
+#        plot = cond_elet_p2,
+#        path = "./graficos",
+#        dpi = 300,
+#        type = "cairo")
+# 
+# ggsave("cond_elet_p3.png",
+#        plot = cond_elet_p3,
+#        path = "./graficos",
+#        dpi = 300,
+#        type = "cairo")
 ```
+
