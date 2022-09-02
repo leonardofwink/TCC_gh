@@ -186,10 +186,10 @@ paged_table(plan_wide_19902020,
 
 ```{r Gráfico OD periodo 1, echo = FALSE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2000"}
 (od_p1 <-ggplot(plan_wide_19902020 %>% 
-                       filter(ANO_COLETA>"1990" &
-                              ANO_COLETA<="2000"),
-                     aes(CODIGO,
-                         `Oxigênio dissolvido`))+
+                  filter(ANO_COLETA>"1990" &
+                           ANO_COLETA<="2000"),
+                aes(CODIGO,
+                    `Oxigênio dissolvido`))+
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
@@ -242,17 +242,16 @@ paged_table(plan_wide_19902020,
    scale_y_continuous(expand = expansion(mult = c(0,0)),
                       n.breaks = 11,
                       limits = c(-1,21))+
-    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
+   scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
    geom_smooth(method = "lm",
                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
                aes(group=1),
                alpha=.5,
                na.rm = TRUE,
                size = 1)+
-   #  geom_line(
-   #     aes(color="red"),
-   #     alpha=.0,
-   # )+
+   # geom_line(
+   #   aes(color="red"),
+   #   alpha=.0)+
    # scale_color_manual("Legenda",
    #                    guide="legend",
    #                    values = c("Classe 1"="#8dcdeb",
@@ -264,8 +263,9 @@ paged_table(plan_wide_19902020,
    #                                               lwd=c(2,2,2,2,2),
    #                                               shape=c(NA,NA,NA,NA,NA),
    #                                               alpha=1)))+
-   theme(legend.position = "bottom")+
+   theme(legend.position = c("87405500", 15))+
    theme_classic())
+
 ```
 
 ```{r Gráfico OD periodo 2, echo = FALSE, warning=FALSE, message = FALSE}
@@ -450,7 +450,6 @@ ggsave("od_p1.png",
        dpi = 300,
        type = "cairo")
 
-
 ggsave("od_p2.png",
        plot = od_p2,
        path = "./graficos",
@@ -459,6 +458,15 @@ ggsave("od_p2.png",
 
 ggsave("od_p3.png",
        plot = od_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("od_3periodos_2.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(od_p1, od_p2, od_p3, ncol = 3),
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -932,10 +940,10 @@ ggsave("od_p3.png",
 iqaod1 <- iqaod_1990_2000
 iqaod2 <- iqaod_2000_2010
 iqaod3 <- iqaod_2010_2020
-# grid.arrange(iqaod1, iqaod2, iqaod3, ncol = 3)
-grid.arrange(od_p1, od_p2, od_p3,
-             iqaod1, iqaod2, iqaod3,
-             ncol = 3, nrow=2)
+grid.arrange(iqaod1, iqaod2, iqaod3, ncol = 3)
+# grid.arrange(od_p1, od_p2, od_p3,
+#              iqaod1, iqaod2, iqaod3,
+#              ncol = 3, nrow=2)
 ```
 
 Resultado que quero chegar pro sumário
@@ -1637,6 +1645,15 @@ ggsave("dbo_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
+
+ggsave("dbo_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(dbo_p1, dbo_p2, dbo_p3, ncol = 3),
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 ### Fósforo total
 
@@ -1969,6 +1986,15 @@ ggsave("ptot_p2.png",
 
 ggsave("ptot_p3.png",
        plot = ptot_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("ptot_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(ptot_p1, ptot_p2, ptot_p3, ncol = 3),
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -2334,6 +2360,15 @@ ggsave("ecoli_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
+
+ggsave("ecoli_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(ecoli_p1, ecoli_p2, ecoli_p3, ncol = 3),
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 ### Nitrogênio amoniacal
 
@@ -2644,7 +2679,6 @@ ggsave("namon_p1.png",
        dpi = 300,
        type = "cairo")
 
-
 ggsave("namon_p2.png",
        plot = namon_p2,
        path = "./graficos",
@@ -2653,6 +2687,15 @@ ggsave("namon_p2.png",
 
 ggsave("namon_p3.png",
        plot = namon_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("namon_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3),
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -2966,7 +3009,6 @@ ggsave("turb_p1.png",
        dpi = 300,
        type = "cairo")
 
-
 ggsave("turb_p2.png",
        plot = turb_p2,
        path = "./graficos",
@@ -2975,6 +3017,15 @@ ggsave("turb_p2.png",
 
 ggsave("turb_p3.png",
        plot = turb_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("turb_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3),
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -3187,13 +3238,12 @@ ggsave("turb_p3.png",
 
 ```{r Gráfico pH 3 periodos juntos, warning=FALSE, message=FALSE}
 grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
-grid.arrange(namon_p1, namon_p2, namon_p3,
-             pH_p1, pH_p2, pH_p3,
-             ncol = 3, nrow=2)
+# grid.arrange(namon_p1, namon_p2, namon_p3,
+#              pH_p1, pH_p2, pH_p3,
+#              ncol = 3, nrow=2)
 ```
 
 ```{r Sumário pH}
-
 (sum_pH_p1 <- plan_wide_19902020 %>%
    select(CODIGO, pH, ANO_COLETA) %>% 
    filter(ANO_COLETA>"1990" &
@@ -3280,7 +3330,6 @@ ggsave("pH_p1.png",
        dpi = 300,
        type = "cairo")
 
-
 ggsave("pH_p2.png",
        plot = pH_p2,
        path = "./graficos",
@@ -3289,6 +3338,15 @@ ggsave("pH_p2.png",
 
 ggsave("pH_p3.png",
        plot = pH_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("pH_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3),
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -3576,7 +3634,6 @@ ggsave("SolTot_p1.png",
        dpi = 300,
        type = "cairo")
 
-
 ggsave("SolTot_p2.png",
        plot = SolTot_p2,
        path = "./graficos",
@@ -3585,6 +3642,15 @@ ggsave("SolTot_p2.png",
 
 ggsave("SolTot_p3.png",
        plot = SolTot_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("SolTot_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3),
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -3966,7 +4032,6 @@ ggsave("iqa_p1.png",
        dpi = 300,
        type = "cairo")
 
-
 ggsave("iqa_p2.png",
        plot = iqa_p2,
        path = "./graficos",
@@ -3978,11 +4043,26 @@ ggsave("iqa_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
+
+ggsave("iqa_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(iqa_p1, iqa_p2, iqa_p3, ncol = 3),
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 
 ## Testando coisas
 ```{r Testando coisas, include = FALSE}
- 
+# plan_wide_19902020 %>% 
+#    select(CODIGO, `Oxigênio dissolvido`, ANO_COLETA) %>% 
+#    ggplot(aes(ANO_COLETA, `Oxigênio dissolvido`, 
+#       col = CODIGO))+
+#    geom_line()+
+#    facet_wrap(~ CODIGO, ncol = 7)
+
 # df111 <- data.frame(x = c(1:100))
 # glimpse(df111)
 # df111$y <- 2 + 3 * df111$x + rnorm(100, sd = 40)
@@ -4010,8 +4090,8 @@ ggsave("iqa_p3.png",
 #                          r2 = format(summary(m)$r.squared, digits = 3)))
 #    as.character(as.expression(eq));
 # }
-#    
-# (od_p1 <-ggplot(plan_wide_19902020 %>% 
+# 
+# (od_p1 <-ggplot(plan_wide_19902020 %>%
 #                    filter(ANO_COLETA>"1990" &
 #                              ANO_COLETA<="2000"),
 #                 aes(CODIGO,
@@ -4075,11 +4155,11 @@ ggsave("iqa_p3.png",
 #                   alpha=.5,
 #                   na.rm = TRUE,
 #                   size = 1)+
-#       # geom_text(aes(x = "87405500", y = 15),
-#       #           label = lm_eqc(plan_wide_19902020),
-#       #           parse = TRUE,
-#       #           inherit.aes = TRUE,
-#       #           check_overlap = TRUE)+
+#       # annotate(geom_text(aes(x = "87405500", y = 15),
+#       #                    label = lm_eqc(plan_wide_19902020),
+#       #                    parse = TRUE,
+#       #                    inherit.aes = TRUE,
+#       #                    check_overlap = TRUE))+
 #       #  geom_line(
 #       #     aes(color="red"),
 #       #     alpha=.0,
@@ -4123,7 +4203,6 @@ ggsave("iqa_p3.png",
 # plan_wide_19902020 <- plan_wide_19902020 %>% 
 #    mutate(IQA = ifelse(IQA == 0, NA, IQA))
 # pacman::p_load(esquisse)
-
 ```
 
 ### Correlação
@@ -4131,7 +4210,6 @@ ggsave("iqa_p3.png",
 library(GGally)
 parametros_IQA <- plan_wide_19902020 %>%
   select(CODIGO,
-         `Escherichia coli`,
          pH,
          DBO,
          `Nitrogênio amoniacal`,
@@ -4142,6 +4220,10 @@ parametros_IQA <- plan_wide_19902020 %>%
          `Sólidos totais`,
          `Oxigênio dissolvido`,
          Condutividade)
+
+write.csv(parametros_IQA,
+          "C:\\Users\\Léo\\Desktop\\TCC\\TCC_github\\TCC_gh\\parametros_IQA.csv",
+          row.names = FALSE)
 
 parametros_IQA %>% 
   select(-CODIGO) %>% 
@@ -4214,6 +4296,241 @@ parametros_IQA %>%
    theme_classic())
 ```
 
+```{r Gráfico cond_elet periodo2, warning = FALSE, message = FALSE}
+(cond_elet_p2 <- ggplot(plan_wide_19902020 %>% 
+                        filter(ANO_COLETA>"2000" &
+                               ANO_COLETA<="2010"),
+                      aes(CODIGO,
+                          Condutividade))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=500,
+            ymax=Inf,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=500,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Condutividade elétrica no período 1990-2000",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
+                      n.breaks = 8,
+                      limits = c(0,
+                             max(plan_wide_19902020$Condutividade, na.rm = TRUE)),
+                      labels = scales::number_format(accuracy = 1,
+                                                     decimal.mark = ",",
+                                                     big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Pior Classe"="#ac5079",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 1"="#8dcdeb"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1),
+   #                                               lwd=c(2,2,2),
+   #                                               shape=c(NA,NA,NA),
+   #                                               alpha=1)))+
+   theme_classic())
+```
+
+```{r Gráfico cond_elet periodo3, warning = FALSE, message = FALSE}
+(cond_elet_p3 <- ggplot(plan_wide_19902020 %>% 
+                        filter(ANO_COLETA>"2010" &
+                               ANO_COLETA<="2020"),
+                      aes(CODIGO,
+                          Condutividade))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=500,
+            ymax=Inf,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=500,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65))+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = 1, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7)+
+   labs(title = "Condutividade elétrica no período 1990-2000",
+        x="Estação",
+        y="")+
+   # geom_jitter(width = .05,
+   #             alpha=.2,
+   #             size=1.5,
+   #             color="black")+
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
+                      n.breaks = 8,
+                      limits = c(0,
+                             max(plan_wide_19902020$Condutividade, na.rm = TRUE)),
+                      labels = scales::number_format(accuracy = 1,
+                                                     decimal.mark = ",",
+                                                     big.mark = " "))+
+    scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   # geom_line(aes(color="red"),
+   #           alpha=.0)+
+   # scale_color_manual("Legenda",
+   #                    guide="legend",
+   #                    values = c("Pior Classe"="#ac5079",
+   #                               "Classe 3"="#fcf7ab",
+   #                               "Classe 1"="#8dcdeb"))+
+   # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1),
+   #                                               lwd=c(2,2,2),
+   #                                               shape=c(NA,NA,NA),
+   #                                               alpha=1)))+
+   theme_classic())
+```
+
+```{r Gráfico cond_elet 3 periodos juntos, warning=FALSE, message=FALSE}
+grid.arrange(cond_elet_p1, cond_elet_p2, cond_elet_p3, ncol = 3)
+# grid.arrange(dbo_p1, dbo_p2, dbo_p3,
+#              iqa_dbo1, iqa_dbo2, iqa_dbo3,
+#              ncol = 3, nrow=2)
+```
+
+```{r Sumário cond_elet}
+(sum_cond_elet_p1 <- plan_wide_19902020 %>%
+   select(CODIGO, Condutividade, ANO_COLETA) %>% 
+   filter(ANO_COLETA>"1990" &
+          ANO_COLETA<="2000") %>% 
+   group_by(CODIGO) %>% 
+   summarize(
+     min = 
+       min(Condutividade, 
+           na.rm = TRUE),
+     q1 = 
+       quantile(Condutividade, 0.25, 
+                na.rm = TRUE),
+     median = 
+       median(Condutividade, 
+              na.rm = TRUE),
+     mean = 
+       mean(Condutividade, 
+            na.rm= TRUE),
+     q3 = 
+       quantile(Condutividade, 0.75, 
+                na.rm = TRUE),
+     max = 
+       max(Condutividade, 
+           na.rm = TRUE))
+)
+
+(sum_cond_elet_p2 <- plan_wide_19902020 %>%
+   select(CODIGO, Condutividade, ANO_COLETA) %>% 
+   filter(ANO_COLETA>"2000" &
+          ANO_COLETA<="2010") %>% 
+   group_by(CODIGO) %>% 
+   summarize(
+     min = 
+       min(Condutividade, 
+           na.rm = TRUE),
+     q1 = 
+       quantile(Condutividade, 0.25, 
+                na.rm = TRUE),
+     median = 
+       median(Condutividade, 
+              na.rm = TRUE),
+     mean = 
+       mean(Condutividade, 
+            na.rm= TRUE),
+     q3 = 
+       quantile(Condutividade, 0.75, 
+                na.rm = TRUE),
+     max = 
+       max(Condutividade, 
+           na.rm = TRUE))
+)
+
+(sum_cond_elet_p3 <- plan_wide_19902020 %>%
+   select(CODIGO, Condutividade, ANO_COLETA) %>% 
+   filter(ANO_COLETA>"2010" &
+          ANO_COLETA<="2020") %>% 
+   group_by(CODIGO) %>% 
+   summarize(
+     min = 
+       min(Condutividade, 
+           na.rm = TRUE),
+     q1 = 
+       quantile(Condutividade, 0.25, 
+                na.rm = TRUE),
+     median = 
+       median(Condutividade, 
+              na.rm = TRUE),
+     mean = 
+       mean(Condutividade, 
+            na.rm= TRUE),
+     q3 = 
+       quantile(Condutividade, 0.75, 
+                na.rm = TRUE),
+     max = 
+       max(Condutividade, 
+           na.rm = TRUE),
+     n = 
+      length(Condutividade))
+)
+
+# plan_wide_19902020 %>% 
+#    select(CODIGO, IQA) %>% 
+#    group_by(CODIGO) %>% 
+#    summarize(
+#       min = 
+#          min(IQA, 
+#              na.rm = TRUE),
+#       q1 = 
+#          quantile(IQA, 0.25, 
+#                   na.rm = TRUE),
+#       median = 
+#          median(IQA, 
+#                 na.rm = TRUE),
+#       mean = 
+#          mean(IQA, 
+#               na.rm= TRUE),
+#       q3 = 
+#          quantile(IQA, 0.75, 
+#                   na.rm = TRUE),
+#       max = 
+#          max(IQA, 
+#              na.rm = TRUE))
+```
 
 ```{r Salvando cond_elet}
 ggsave("cond_elet_p1.png",
@@ -4222,16 +4539,25 @@ ggsave("cond_elet_p1.png",
        dpi = 300,
        type = "cairo")
 
-# ggsave("cond_elet_p2.png",
-#        plot = cond_elet_p2,
-#        path = "./graficos",
-#        dpi = 300,
-#        type = "cairo")
-# 
-# ggsave("cond_elet_p3.png",
-#        plot = cond_elet_p3,
-#        path = "./graficos",
-#        dpi = 300,
-#        type = "cairo")
+ggsave("cond_elet_p2.png",
+       plot = cond_elet_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("cond_elet_p3.png",
+       plot = cond_elet_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("cond_elet_3periodos.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = grid.arrange(cond_elet_p1, cond_elet_p2, cond_elet_p3, ncol = 3),
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 
