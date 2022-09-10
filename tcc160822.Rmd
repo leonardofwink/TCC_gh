@@ -491,15 +491,40 @@ ggsave("od_3periodos_2.png",
 ```
 
 ```{r Gráfico OD_chernobyl, echo = FALSE, warning=FALSE, message = FALSE}
+# p1 <- function(plan_wide_19902020, ANO_COLETA) {
+#   plan_wide_19902020 %>% 
+#     filter(ANO_COLETA > "1990" &
+#            ANO_COLETA <= "2000")
+# }
 # 
-# classes_od <- function() {
-#   +annotate("rect",
-#             xmin=-Inf,
-#             xmax=Inf,
-#             ymin=-Inf,
-#             ymax=2,
-#             alpha=1,
-#             fill="#ac5079")+ #>pior classe
+# p2 <- plan_wide_19902020 %>% 
+#   filter(ANO_COLETA > "2000" &
+#          ANO_COLETA <= "2010")
+# 
+# p3 <- plan_wide_19902020 %>% 
+#   filter(ANO_COLETA > "2010" &
+#          ANO_COLETA <= "2020")
+# 
+# classes_od <- function(plan_wide_19902020, parametro, periodo){
+#   ggplot(plan_wide_19902020 %>%
+#            periodo),
+#   aes(CODIGO,
+#       parametro)
+# }
+
+
+# (od_chernobyl <- ggplot(plan_wide_19902020 %>%
+#                           p1(ANO_COLETA > "1990" &
+#                                ANO_COLETA <= "2000"),
+#                         aes(CODIGO,
+#                             `Oxigênio dissolvido`))+
+#     annotate("rect",
+#              xmin=-Inf,
+#              xmax=Inf,
+#              ymin=-Inf,
+#              ymax=2,
+#              alpha=1,
+#              fill="#ac5079")+ #>pior classe
 #     annotate("rect",
 #              xmin=-Inf,
 #              xmax=Inf,
@@ -527,72 +552,64 @@ ggsave("od_3periodos_2.png",
 #              ymin=6,
 #              ymax=Inf,
 #              alpha=1,
-#              fill="#8dcdeb") #classe 1
-# }
-# 
-# (od_chernobyl <- ggplot(plan_wide_19902020 %>%
-#                    filter(ANO_COLETA > "1990" &
-#                             ANO_COLETA <= "2000"),
-#                  aes(CODIGO,
-#                      `Oxigênio dissolvido`))+
-#     classes_od+
-#    stat_boxplot(geom = 'errorbar',
-#                 width=0.3,
-#                 position = position_dodge(width = 0.65))+
-#    geom_boxplot(fill='#F8F8FF',
-#                 color="black",
-#                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-#                 width= 0.7)+
-#    labs(title = "Oxigênio Dissolvido no período 1990-2000",
-#         x="Estação",
-#         y="mg/L")+
-#    # geom_jitter(width = .07,
-#    #             alpha=.15,
-#    #             size=1.,
-#    #             color="black")+
-#    ggbeeswarm::geom_quasirandom(
-#      size = 1.2,
-#      alpha = .25,
-#      width = .07,
-#    )+
-#    scale_y_continuous(expand = expansion(mult = c(0,0)),
-#                       n.breaks = 11,
-#                       limits = c(-1,21))+
-#    scale_x_discrete(limits = c("87398500",
-#                                "87398980",
-#                                "87398900",
-#                                "87398950",
-#                                "87405500",
-#                                "87406900",
-#                                "87409900"),
-#                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-#    )+
-#    geom_smooth(method = "lm",
-#                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-#                aes(group=1),
-#                alpha=.5,
-#                na.rm = TRUE,
-#                size = 1)+
-#    # geom_line(
-#    #   aes(color="red"),
-#    #   alpha=.0)+
-#    # scale_color_manual("Legenda",
-#    #                    guide="legend",
-#    #                    values = c("Classe 1"="#8dcdeb",
-#    #                               "Classe 2"="#70c18c",
-#    #                               "Classe 3"="#fcf7ab",
-#    #                               "Classe 4"="#eb5661",
-#    #                               "Pior Classe"="#ac5079"))+
-#    # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
-#  #                                               lwd=c(2,2,2,2,2),
-#  #                                               shape=c(NA,NA,NA,NA,NA),
-#  #                                               alpha=1)))+
-#  theme(
-#    plot.title = element_text(size = 19),
-#    axis.title.y = element_text(size = 15),
-#    axis.text.y = element_text(size = 17),
-#    axis.text.x = element_text(size = 17),
-#  )
+#              fill="#8dcdeb")+ #classe 1
+#     stat_boxplot(geom = 'errorbar',
+#                  width=0.3,
+#                  position = position_dodge(width = 0.65))+
+#     geom_boxplot(fill='#F8F8FF',
+#                  color="black",
+#                  outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+#                  width= 0.7)+
+#     labs(title = "Oxigênio Dissolvido no período 1990-2000",
+#          x="Estação",
+#          y="mg/L")+
+#     # geom_jitter(width = .07,
+#     #             alpha=.15,
+#     #             size=1.,
+#     #             color="black")+
+#     ggbeeswarm::geom_quasirandom(
+#       size = 1.2,
+#       alpha = .25,
+#       width = .07,
+#     )+
+#     scale_y_continuous(expand = expansion(mult = c(0,0)),
+#                        n.breaks = 11,
+#                        limits = c(-1,21))+
+#     scale_x_discrete(limits = c("87398500",
+#                                 "87398980",
+#                                 "87398900",
+#                                 "87398950",
+#                                 "87405500",
+#                                 "87406900",
+#                                 "87409900"),
+#                      labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+#     )+
+#     geom_smooth(method = "lm",
+#                 se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+#                 aes(group=1),
+#                 alpha=.5,
+#                 na.rm = TRUE,
+#                 size = 1)+
+#     # geom_line(
+#     #   aes(color="red"),
+#     #   alpha=.0)+
+#     # scale_color_manual("Legenda",
+#     #                    guide="legend",
+#     #                    values = c("Classe 1"="#8dcdeb",
+#     #                               "Classe 2"="#70c18c",
+#     #                               "Classe 3"="#fcf7ab",
+#     #                               "Classe 4"="#eb5661",
+#     #                               "Pior Classe"="#ac5079"))+
+#     # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+#   #                                               lwd=c(2,2,2,2,2),
+#   #                                               shape=c(NA,NA,NA,NA,NA),
+#   #                                               alpha=1)))+
+#   theme(
+#     plot.title = element_text(size = 19),
+#     axis.title.y = element_text(size = 15),
+#     axis.text.y = element_text(size = 17),
+#     axis.text.x = element_text(size = 17),
+#   )
 # )
 ```
 
