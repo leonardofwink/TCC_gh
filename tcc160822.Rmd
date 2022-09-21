@@ -247,58 +247,145 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
 ```{r setting theme}
 theme_grafs <- function(bg = "white", 
                         coloracao_letra = "black") {
-   theme(
-      plot.title = element_text(
-         hjust = 0.5,
-         color = coloracao_letra,
-         size = 19),
-      
-      axis.title.x = 
-         # element_text(
-         # color = coloracao_letra,
-         # size = 15,
-         # angle = 0,),
-         element_blank(),
-      axis.title.y = element_text(
-         color = coloracao_letra,
-         size = 15,
-         angle = 90),
-      
-      axis.text.x = element_text(
-         color = coloracao_letra,
-         size = 17),
-      axis.text.y = element_text(
-         color = coloracao_letra,
-         size = 17,
-         angle = 0),
-      
-      panel.background = element_rect(fill = bg),
-      plot.background = element_rect(fill = bg),
-      plot.margin = margin(l = 5, r = 10,
-                           b = 5, t = 5)
-   )
+  theme(
+    plot.title = 
+      element_text(
+        hjust = 0.5,
+        color = coloracao_letra,
+        size = 19),
+    
+    axis.title.x = 
+      # element_text(
+      # color = coloracao_letra,
+      # size = 15,
+      # angle = 0,),
+      element_blank(),
+    axis.title.y = element_text(
+      color = coloracao_letra,
+      size = 15,
+      angle = 90),
+    
+    axis.text.x = element_text(
+      color = coloracao_letra,
+      size = 17),
+    axis.text.y = element_text(
+      color = coloracao_letra,
+      size = 17,
+      angle = 0),
+    
+    panel.background = element_rect(fill = bg),
+    plot.background = element_rect(fill = bg),
+    plot.margin = margin(l = 5, r = 10,
+                         b = 5, t = 5)
+  )
 }
 ```
 
 # setting different timescales
 
 ```{r setting periodos, echo = FALSE}
-# p1 <- plan_wide_19902020 %>% 
-#   filter(ANO_COLETA > "1990" &
-#            ANO_COLETA <= "2000")
-# 
-# p2 <- plan_wide_19902020 %>% 
-#   filter(ANO_COLETA > "2000" &
-#            ANO_COLETA <= "2010")
-# 
-# p3 <- plan_wide_19902020 %>% 
-#   filter(ANO_COLETA > "2010" &
-#            ANO_COLETA <= "2020")
+testando1 <- plan_wide_19902020 %>% 
+  # select(CODIGO, ANO_COLETA) %>% 
+  mutate(
+    periodo = if_else(
+      ANO_COLETA <= 2000, 
+      "p1",
+      if_else(
+        ANO_COLETA <= 2010,
+        "p2",
+        "p3"
+      )
+    )
+  )
 
-# teste_all_periodos <- plan_wide_19902020 %>% 
-#   filter(
-#     between(ANO_COLETA, 1990, 2000)
-#   )
+(od <- testando1 %>% 
+    ggplot(
+      aes(
+        x = CODIGO,
+        y = `Oxigênio dissolvido`,
+        color = periodo,
+        )
+    )+
+    annotate("rect",
+             xmin = -Inf, xmax = Inf,
+             ymin = -Inf, ymax = 2,
+             alpha = 1,
+             fill = "#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin = -Inf, xmax = Inf,
+             ymin = 2, ymax = 4,
+             alpha = 1,
+             fill = "#eb5661")+ #classe 4
+    annotate("rect",
+             xmin = -Inf, xmax = Inf,
+             ymin = 4, ymax = 5,
+             alpha = 1,
+             fill = "#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin = -Inf, xmax = Inf,
+             ymin = 5, ymax = 6,
+             alpha = 1,
+             fill = "#70c18c")+ #classe 2
+    annotate("rect",
+             xmin = -Inf, xmax = Inf,
+             ymin= 6, ymax = Inf,
+             alpha = 1,
+             fill = "#8dcdeb")+ #classe 1
+    stat_boxplot(
+      geom = 'errorbar',
+      # width = 0.3,
+      # position = position_dodge(width = 0.65)
+    )+
+    geom_boxplot(
+      fill = '#F8F8FF',
+      # color = "black",
+      outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+      # width = 0.7
+    )+
+    labs(
+      title = "Oxigênio Dissolvido no período 1990-2000",
+      x="Estação",
+      y="mg/L"
+    )+
+    # ggbeeswarm::geom_quasirandom(
+    #    size = 1.2,
+    #    alpha = .25,
+    #    width = .07,
+    # )+
+    scale_y_continuous(
+      expand = expansion(mult = c(0,0)),
+      n.breaks = 11,
+      limits = c(-1,21)
+    )+
+    scale_x_discrete(limits = c("87398500", 
+                                "87398980", 
+                                "87398900", 
+                                "87398950", 
+                                "87405500", 
+                                "87406900", 
+                                "87409900"),
+                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+    )+
+    # scale_fill_brewer(palette = "Set1")+
+    scale_color_manual(name = "Período",
+                       breaks = c("p1", "p2", "p3"),
+                       values = c("black", "black", "black"),
+                       labels = c("1990-2000", "2000-2010", "2010-2020")
+    )+
+    geom_smooth(
+      method = "lm",
+      se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+      aes(group = 1),
+      alpha = .5,
+      na.rm = TRUE,
+      size = 1
+    )+
+    theme(
+      legend.position = c(0.94, 0.9),
+    )
+  # theme_grafs()
+  # facet_wrap(periodo~.)
+)
 ```
 
 # setting sumaries
@@ -446,7 +533,8 @@ theme_grafs <- function(bg = "white",
 # parametros <- colnames(parametros_IQA)
 
 # base_od <- function(titulo = "Título") {
-#   annotate("rect",
+#   list(
+#     annotate("rect",
 #            xmin = -Inf, xmax = Inf,
 #            ymin = -Inf, ymax = 2,
 #            alpha = 1,
@@ -510,6 +598,7 @@ theme_grafs <- function(bg = "white",
 #                 alpha=.5,
 #                 na.rm = TRUE,
 #                 size = 1)
+#   )
 # }
 
 # plan_wide_19902020 %>%
@@ -521,10 +610,8 @@ theme_grafs <- function(bg = "white",
 #       color = "black",
 #       outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
 #       width= 0.7
-#     )+
+#     )+ 
 #   base_od("Oxigênio 1990")
-
-
 ```
 
 ```{r Gráfico OD periodo 1, echo = FALSE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2000"}
@@ -4242,11 +4329,8 @@ ggsave("iqa_3periodos.png",
 # summary(fit)
 # summary.lm(fit)
 # 
-# plan_wide_19902020$IQA
-# 
-# plan_wide_19902020 <- plan_wide_19902020 %>% 
-#    mutate(IQA = ifelse(IQA == 0, NA, IQA))
 # pacman::p_load(esquisse)
+
 ```
 
 ### Correlação
