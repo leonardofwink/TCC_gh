@@ -52,7 +52,7 @@ Some features that I want to add:
 - If the parameter is x, then use x's classes (with its own classes background color plotted)
 - Define the timescale, should act just like a filter
 
-```{r p1 example}
+```{r p1 example, eval=FALSE}
 # plan_wide_19902020 %>%
 #   filter(ANO_COLETA > "1990" &
 #          ANO_COLETA <= "2000")
@@ -82,7 +82,7 @@ Some features that I want to add:
 
 # Instalar os pacotes
 
-```{r instalar pacotes}
+```{r instalar pacotes, eval=FALSE}
 # install.packages(tidyverse)
 ```
 
@@ -109,8 +109,10 @@ pacman::p_load(readr, rmarkdown, readxl,
                gapminder, knitr, kableExtra,
                gridExtra, #modelsummary, 
                gtsummary, ggplot2,
-               ggbeeswarm, GGally)
+               ggbeeswarm, GGally,
+               report)
 # pacman::p_load(tibbletime)
+cite_packages()
 ```
 
 ```{r cronometrando quanto tempo cada chunk leva}
@@ -135,6 +137,13 @@ knitr::opts_chunk$set(time_it = TRUE)
 ```{r setup, include=FALSE}
 # knitr::opts_chunk$set(echo = TRUE)
 ```
+
+### referenciando os pacotes
+```{r referenciando os pacotes}
+version$version.string
+citation(package = "tidyverse")
+```
+
 
 ## importando a planilha
 
@@ -225,7 +234,8 @@ parametros_IQA <- plan_wide_19902020 %>%
          turbidez,
          solidos_totais,
          oxigenio_dissolvido,
-         Condutividade)
+         Condutividade,
+         ANO_COLETA)
 
 write.csv(parametros_IQA,
           "./parametros_IQA.csv",
@@ -1244,21 +1254,23 @@ grid.arrange(iqaod_p1, iqaod_p2, iqaod_p3, ncol = 3)
 (sum_od_p1 <- plan_wide_19902020 %>%
     select(CODIGO, oxigenio_dissolvido, ANO_COLETA) %>% 
     filter(ANO_COLETA>"1990" &
-              ANO_COLETA<="2000") %>% 
-    group_by(CODIGO) %>% 
-    summarize(
-       min = 
-          min(oxigenio_dissolvido, na.rm = TRUE),
-       q1 = 
-          quantile(oxigenio_dissolvido, 0.25, na.rm = TRUE),
+             ANO_COLETA<="2000") %>% 
+   group_by(CODIGO) %>% 
+   # CODIGO == "87398500" <- "teste1"
+    # %>% 
+ summarize(
+       max = 
+          max(oxigenio_dissolvido, na.rm = TRUE),
+       q3 = 
+          quantile(oxigenio_dissolvido, 0.75, na.rm = TRUE),
        median = 
           median(oxigenio_dissolvido, na.rm = TRUE),
        mean = 
           mean(oxigenio_dissolvido, na.rm= TRUE),
-       q3 = 
-          quantile(oxigenio_dissolvido, 0.75, na.rm = TRUE),
-       max = 
-          max(oxigenio_dissolvido, na.rm = TRUE),
+       q1 = 
+          quantile(oxigenio_dissolvido, 0.25, na.rm = TRUE),
+       min = 
+          min(oxigenio_dissolvido, na.rm = TRUE),
        n = 
           length(oxigenio_dissolvido)
     ) %>% 
@@ -1268,8 +1280,73 @@ grid.arrange(iqaod_p1, iqaod_p2, iqaod_p3, ncol = 3)
        values_to = "valor"
     ) %>% 
     pivot_wider(names_from = CODIGO,
-                values_from = valor)
-)
+                values_from = valor) %>% 
+   rename(
+     "PM1" = "87398500",
+     "PM2" = "87398900",
+     "PM3" = "87398950",
+     "PM4" = "87398980",
+     "PM5" = "87405500",
+     "PM6" = "87406900",
+     "PM7" = "87409900"
+   ) 
+ )
+
+
+# teste1 <- parametros_IQA %>% 
+#   group_by(CODIGO) %>% 
+#   pivot_longer(
+#     !CODIGO,
+#     names_to = "parametro",
+#     values_to = "valor"
+#   ) %>% 
+#   # group_by(parametro)
+#   pivot_wider(
+#     names_from = CODIGO,
+#     values_from = valor,
+#     # .groups = "drop"
+#   ) %>% 
+#   rename(
+#     "PM1" = "87398500",
+#     "PM2" = "87398900",
+#     "PM3" = "87398950",
+#     "PM4" = "87398980",
+#     "PM5" = "87405500",
+#     "PM6" = "87406900",
+#     "PM7" = "87409900"
+#   ) %>%
+#   select(par, PM1, PM2, PM3, PM4, PM5, PM6, PM7) %>% 
+#   filter(
+#     par == "pH"
+#   ) 
+# %>% 
+#   unnest(dplyr::everything())
+
+
+# teste1$PM1[2]
+
+# %>%
+#   summarize(
+#     max =
+#       max(oxigenio_dissolvido, na.rm = TRUE),
+#     q3 =
+#       quantile(oxigenio_dissolvido, 0.75, na.rm = TRUE),
+#     median =
+#       median(oxigenio_dissolvido, na.rm = TRUE),
+#     mean =
+#       mean(oxigenio_dissolvido, na.rm= TRUE),
+#     q1 =
+#       quantile(oxigenio_dissolvido, 0.25, na.rm = TRUE),
+#     min =
+#       min(oxigenio_dissolvido, na.rm = TRUE),
+#     n =
+#       length(oxigenio_dissolvido)
+#     )
+# #     
+# 
+# sum(sum_od_p1$n)
+
+
 
 (sum_od_p2 <- plan_wide_19902020 %>%
       select(CODIGO, oxigenio_dissolvido, ANO_COLETA) %>% 
@@ -2816,7 +2893,7 @@ ggsave("ecoli_3periodos.png",
 ```{r Gráfico Nitrogênio total facetted, fig.cap="nitrogenio-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
 (namon <- ggplot(plan_wide_19902020,
                  aes(CODIGO,
-                     nitro_total))+
+                     nitro_amon))+
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
@@ -2880,6 +2957,124 @@ ggsave("ecoli_3periodos.png",
    theme_grafs()
 )
 ```
+
+```{r Gráfico Nitrogênio line, warning = FALSE, message = FALSE}
+periodo_inicial <- as.Date("1990-01-01", "%Y-%m-%d")
+periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
+
+(nitro_line <- 
+    
+    plan_wide_19902020 %>%
+    filter(ANO_COLETA > "1990" &
+             ANO_COLETA <= "2020") %>%
+    select(CODIGO, nitro_amon, DATA_COLETA, periodo) %>%
+    group_by(CODIGO) %>%
+    # pivot_wider(
+    #   names_from = CODIGO,
+    #   values_from = nitro_amon,
+    #   id_cols = DATA_COLETA
+    # ) %>% 
+    ggplot(
+      aes(x = DATA_COLETA,
+          y = nitro_amon,
+          # color = CODIGO
+      ))+
+    # geom_rect(
+    #   aes(xmin = periodo_inicial, 
+    #       xmax = periodo_final,
+    #       ymin = 13.3, 
+    #       ymax = Inf,
+    #       alpha= 0.005,
+    #       fill= "#ac5079"),
+    # show.legend = FALSE)+ #>pior classe
+    # geom_rect(
+    #   aes(xmin = periodo_inicial, 
+    #       xmax = periodo_final,
+  #       ymin= 3.7,
+  #       ymax= 13.3,
+  #       alpha= 0.005,
+  #       fill= "#fcf7ab"),
+  #    show.legend = FALSE)+ #classe 3
+  # geom_rect(
+  #   aes(xmin = periodo_inicial, 
+  #       xmax = periodo_final,
+  #       ymin= 0,
+  #       ymax= 3.7,
+  #       alpha= 0.005,
+  #       fill= "blue"
+  #         # "#8dcdeb"
+  #         ),
+  #    show.legend = FALSE)+ #classe 1
+  annotate("rect",
+           xmin= periodo_inicial,
+           xmax= periodo_final,
+           ymin=13.3,
+           ymax=Inf,
+           alpha= 0.7,
+           fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin= periodo_inicial,
+             xmax= periodo_final,
+             ymin=3.7,
+             ymax=13.3,
+             alpha= 0.7,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin= periodo_inicial,
+             xmax= periodo_final,
+             ymin= -Inf,
+             ymax=3.7,
+             alpha= 0.7,
+             fill="#8dcdeb")+ #classe 1
+    geom_line(
+      # aes(color = CODIGO),
+      na.rm = TRUE)+
+    geom_point(
+      # aes(color = CODIGO),
+      na.rm = TRUE)+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "10 years",
+      minor_breaks = "5 years",
+      date_labels = "%Y",
+    )+
+    # geom_smooth(
+    #   # aes(color = CODIGO),
+    #   method = "lm",
+    #   # formula = y ~ poly(x, 2),
+    #   # span = 0.2,
+    #   se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
+    #   aes(group = 1),
+    #   alpha =.5,
+    #   na.rm = TRUE,
+    #   size = 0.3,
+    #   # fullrange = TRUE,
+  #   # show.legend = TRUE
+  # )+
+  # stat_smooth(
+  #   geom = "smooth",
+  #   # span = 0.2,
+  #   se = FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+  #   # aes(group = 1),
+  #   # alpha =.5,
+  #   na.rm = TRUE,
+  #   # size = 0.3,
+  #   fullrange = TRUE,
+  #   show.legend = TRUE
+  # )+
+  facet_wrap(
+    ~CODIGO,
+    nrow = 4,
+  )+
+    theme_bw()
+)
+```
+
 
 ```{r Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
 (namon_p1 <- ggplot(plan_wide_19902020 %>% 
@@ -3236,7 +3431,7 @@ ggsave("namon_3periodos.png",
    annotate("rect",
             xmin=-Inf,
             xmax=Inf,
-            ymin=-Inf,
+            ymin=0,
             ymax=40,
             alpha=1,
             fill="#8dcdeb")+ #classe 1
@@ -3252,12 +3447,14 @@ ggsave("namon_3periodos.png",
         x="Estação",
         y="UNT")+
    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
-                      n.breaks = 16,
-                      limits = c(min(plan_wide_19902020$turbidez, na.rm = TRUE),
-                                 # 500
-                                 max(plan_wide_19902020$turbidez, na.rm = TRUE)
-                                 ),
-                      # trans = "log10",
+                      n.breaks = 8,
+                      limits = c(
+                        # 1,
+                        min(plan_wide_19902020$turbidez, na.rm = TRUE),
+                        # 500
+                        max(plan_wide_19902020$turbidez, na.rm = TRUE)
+                      ),
+                      trans = "log10",
                       labels = scales::number_format(accuracy = 1,
                                                      decimal.mark = ",",
                                                      big.mark = " "))+
@@ -5054,7 +5251,10 @@ ggsave("iqa_3periodos.png",
 
 ```{r Correlação, fig.cap="correlação-parametros-qualidade-agua-gravataí no período 1990-2020", time_it = TRUE, warning=FALSE, message = FALSE,}
 parametros_IQA %>% 
-  select(-CODIGO, -nitro_total) %>% 
+  select(
+    -CODIGO,
+    -nitro_total) %>% 
+  # group_by(CODIGO) %>% 
   rename(
     CE = Condutividade,
     OD = oxigenio_dissolvido,
@@ -5101,6 +5301,36 @@ correl_IQA <- parametros_IQA %>%
   select(-CODIGO) %>%
   ggpairs(title = "Correlação entre parâmetros que compõem o IQA",
           axisLabels = "show")
+
+correlacao_pIQA <- parametros_IQA %>% 
+  group_by(CODIGO) %>% 
+  correlation::correlation()
+
+correlacao_pIQA %>% 
+  # glimpse()
+  filter(
+    p < 0.001
+  ) %>% 
+  t() %>% 
+  summary()
+
+parametros_IQA %>% 
+  # group_by(CODIGO) %>% 
+  select(
+    nitro_kjeldahl, Condutividade
+  ) %>% 
+  # correlation::cor_test() %>% 
+  plot()
+
+str(
+  plot(
+    correlation::cor_test(
+      parametros_IQA,
+      "nitro_kjeldahl",
+      "Condutividade"
+    )
+  )
+)
 ```
 
 ### Condutividade elétrica
@@ -5494,3 +5724,24 @@ ggsave("cond_elet_3periodos.png",
        type = "cairo")
 
 ```
+
+
+## Textando o texto
+
+* § falar do comportamento geral dos dados
+* 2º § - xº § -> abordar os principais parâmetros que estão sendo impactados, detalhando, nas estações mais relevantes, como ficaram os quartis/mediana etc.
+
+
+
+`r sum_od_p1$PM1[1]`
+
+Os resultados apontam que para o parâmetro OD
+
+
+
+
+
+
+
+
+
