@@ -4,6 +4,7 @@ author: "Leonardo Fernandes Wink"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
   html_document: 
+    distill::distill_article:
     highlight: haddock
     keep_md: yes
     number_sections: yes
@@ -467,29 +468,38 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
 #   sumario(parametros = DBO)
 
 # sum_IQA_p1 <- plan_wide_19902020 %>%
-#    select(CODIGO, IQA, ANO_COLETA) %>% 
+#    dplyr::select(CODIGO, IQA, ANO_COLETA) %>%
 #    filter(ANO_COLETA>"1990" &
-#             ANO_COLETA<="2000") %>% 
-#    group_by(CODIGO) %>% 
+#             ANO_COLETA<="2000") %>%
+#    group_by(CODIGO) %>%
 #    summarize(
-#      min = 
-#        min(IQA, 
+#      min =
+#        min(IQA,
 #            na.rm = TRUE),
-#      q1 = 
-#        quantile(IQA, 0.25, 
+#      q1 =
+#        quantile(IQA, 0.25,
 #                 na.rm = TRUE),
-#      median = 
-#        median(IQA, 
+#      median =
+#        median(IQA,
 #               na.rm = TRUE),
-#      mean = 
-#        mean(IQA, 
+#      mean =
+#        mean(IQA,
 #             na.rm= TRUE),
-#      q3 = 
-#        quantile(IQA, 0.75, 
+#      q3 =
+#        quantile(IQA, 0.75,
 #                 na.rm = TRUE),
-#      max = 
-#        max(IQA, 
+#      max =
+#        max(IQA,
 #            na.rm = TRUE))
+```
+
+# criando função para gerar boxplots com percentil 20 e 80
+```{r funcao percentil 80}
+f <- function(x) {
+  r <- quantile(x, probs = c(0.10, 0.20, 0.50, 0.80, 0.90))
+  names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
+  return(r)
+}
 ```
 
 # Parâmetros físico-químicos
@@ -497,7 +507,23 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
 ### Oxigênio Dissolvido
 
 ```{r Gráfico OD facetted, echo = FALSE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2020"}
-(od <- plan_wide_19902020 %>% 
+# y <- rnorm(100)
+# df <- data.frame(
+#   x = 1,
+#   y0 = min(y),
+#   y25 = quantile(y, 0.20),
+#   y50 = median(y),
+#   y75 = quantile(y, 0.80),
+#   y100 = max(y)
+# )
+# ggplot(df, aes(x)) +
+#   geom_boxplot(
+#    aes(ymin = y0, lower = y25, middle = y50, upper = y75, ymax = y100),
+#    stat = "identity"
+#  )
+
+# 
+(od <- plan_wide_19902020 %>%
     ggplot(
       aes(
         x = CODIGO,
@@ -534,14 +560,34 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
     stat_boxplot(
       geom = 'errorbar',
       width = 0.3,
-      position = position_dodge(width = 0.65)
+      position = position_dodge(width = 0.65),
+      fun.data = f,
     )+
-    geom_boxplot(
+    stat_boxplot(
+      width = 0.7,
       fill = '#F8F8FF',
       color = "black",
+      fun.data = f,
+      geom = "boxplot",
       outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-      width = 0.7
     )+
+    # geom_boxplot(
+    #   # fill = '#F8F8FF',
+    #   # color = "black",
+      # outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+    #   # width = 0.7
+    #   stat = "identity"
+    # )+
+   # stat_summary(
+   #   fun.data = median_hilow,
+   #   fun.args = 0.6,
+   #   show.legend = FALSE,
+   #   geom = "crossbar",
+   #   fill = '#F8F8FF',
+   #   color = "black",
+   #   outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+   #   width = 0.7
+   #  )+
     facet_wrap(~periodo)+
     labs(
       title = "Oxigênio Dissolvido no período 1990-2020",
@@ -558,20 +604,20 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
       n.breaks = 11,
       limits = c(-0.3,21)
     )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
+    scale_x_discrete(limits = c("87398500",
+                                "87398980",
+                                "87398900",
+                                "87398950",
+                                "87405500",
+                                "87406900",
                                 "87409900"),
                      labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
     )+
-    # scale_fill_brewer(palette = "Set1")+
+    scale_fill_brewer(palette = "Set1")+
     scale_color_manual(name = "Período",
-                       breaks = c("p1", "p2", "p3"),
-                       values = c("black", "#303030", "#696969"),
-                       labels = c("1990-2000", "2000-2010", "2010-2020")
+    breaks = c("p1", "p2", "p3"),
+    values = c("black", "#303030", "#696969"),
+    labels = c("1990-2000", "2000-2010", "2010-2020")
     )+
     geom_smooth(
       method = "lm",
@@ -644,12 +690,12 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
       n.breaks = 11,
       limits = c(-1,21)
    )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
+   scale_x_discrete(limits = c("87398500",
+                               "87398980",
+                               "87398900",
+                               "87398950",
+                               "87405500",
+                               "87406900",
                                "87409900"),
                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
    )+
@@ -846,14 +892,14 @@ grid.arrange(od_p1, od_p2, od_p3, ncol = 3)
 ```
 
 ```{r Salvando OD, warning=FALSE, message = FALSE,}
-ggsave("od.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = od,
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
+# ggsave("od.png",
+#        units = c("px"),
+#        width = 4500,
+#        height = 2993,
+#        plot = od,
+#        path = "./graficos",
+#        dpi = 300,
+#        type = "cairo")
 
 ggsave("od_p1.png",
        plot = od_p1,
@@ -1253,8 +1299,8 @@ grid.arrange(iqaod_p1, iqaod_p2, iqaod_p3, ncol = 3)
 ```{r Sumário OD, echo = FALSE, warning=FALSE, message = FALSE,}
 (sum_od_p1 <- plan_wide_19902020 %>%
     select(CODIGO, oxigenio_dissolvido, ANO_COLETA) %>% 
-    filter(ANO_COLETA>"1990" &
-             ANO_COLETA<="2000") %>% 
+    filter(ANO_COLETA > "1990" &
+             ANO_COLETA <= "2000") %>% 
    group_by(CODIGO) %>% 
    # CODIGO == "87398500" <- "teste1"
     # %>% 
@@ -1291,7 +1337,6 @@ grid.arrange(iqaod_p1, iqaod_p2, iqaod_p3, ncol = 3)
      "PM7" = "87409900"
    ) 
  )
-
 
 # teste1 <- parametros_IQA %>% 
 #   group_by(CODIGO) %>% 
@@ -2096,7 +2141,11 @@ ggsave("dbo_3periodos.png",
                       n.breaks = 8,
                       limits = c(min(plan_wide_19902020$fosforo_total, na.rm = TRUE),
                                  max(plan_wide_19902020$fosforo_total), na.rm = TRUE),
-                      trans = "log10")+
+                      trans = "log10",
+                      labels = scales::number_format(accuracy = .001,
+                                                     decimal.mark = ",",
+                                                     big.mark = " ")
+                      )+
     ggbeeswarm::geom_quasirandom(
        size = 1.2,
        alpha = .25,
@@ -2967,7 +3016,7 @@ periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
     plan_wide_19902020 %>%
     filter(ANO_COLETA > "1990" &
              ANO_COLETA <= "2020") %>%
-    select(CODIGO, nitro_amon, DATA_COLETA, periodo) %>%
+    dplyr::select(CODIGO, nitro_amon, DATA_COLETA, periodo) %>%
     group_by(CODIGO) %>%
     # pivot_wider(
     #   names_from = CODIGO,
@@ -5251,7 +5300,7 @@ ggsave("iqa_3periodos.png",
 
 ```{r Correlação, fig.cap="correlação-parametros-qualidade-agua-gravataí no período 1990-2020", time_it = TRUE, warning=FALSE, message = FALSE,}
 parametros_IQA %>% 
-  select(
+  dplyr::select(
     -CODIGO,
     -nitro_total) %>% 
   # group_by(CODIGO) %>% 
@@ -5298,7 +5347,7 @@ parametros_IQA %>%
 
 # Gráfico das correlações entre todos os parâmetros com significância
 correl_IQA <- parametros_IQA %>%
-  select(-CODIGO) %>%
+  dplyr::select(-CODIGO) %>%
   ggpairs(title = "Correlação entre parâmetros que compõem o IQA",
           axisLabels = "show")
 
@@ -5316,7 +5365,7 @@ correlacao_pIQA %>%
 
 parametros_IQA %>% 
   # group_by(CODIGO) %>% 
-  select(
+  dplyr::select(
     nitro_kjeldahl, Condutividade
   ) %>% 
   # correlation::cor_test() %>% 
