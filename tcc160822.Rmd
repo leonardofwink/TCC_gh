@@ -49,7 +49,11 @@ The logic behind the sorting in the boxplots is because of 2 main reasons:
 1.  The original monitoring point isn't easy to understand (8 digits, like 87409900)
 2.  Changing the original nomenclature to PM1, PM2 (...) makes it easier to understand that the last point has water contributions of every other point upstream.
 
-Some features that I want to add: - If the parameter is x, then use x's classes (with its own classes background color plotted) - Define the timescale, should act just like a filter
+Some features that I want to add:
+
+-   If the parameter is x, then use x's classes (with its own classes background color plotted)
+
+-   Define the timescale, should act just like a filter
 
 ```{r p1 example, eval=FALSE}
 # plan_wide_19902020 %>%
@@ -203,6 +207,7 @@ paged_table(plan_wide_19902020,
 # data wrangling
 
 Como há dados faltantes, no cálculo entre o produto das colunas, o R acaba interpretando como se fosse zero, mas na verdade é `NA`.
+
 ```{r data wrangling}
 plan_wide_19902020 <- plan_wide_19902020 %>% 
    mutate(IQA = ifelse(IQA == 0, NA, IQA))
@@ -5775,84 +5780,261 @@ ggsave("cond_elet_3periodos.png",
 
 Os resultados apontam que para o parâmetro OD
 
+
+## Gráficos exemplos boxplot
 ```{r elementos do boxplot}
-(boxplot_example <- data.frame(
+set.seed(2023)
+exemplo_boxplot_df <- data.frame(
   PM = c("PM1"),
   # letras = letters[seq( from = 1, to = 1 )],
   Stat1 = rnorm(100, 
-                mean=5, 
-                sd=3)
-) %>% 
-  ggplot(
-    aes(
-      x = PM,
-      y = Stat1,
+                mean = 5, 
+                sd = 1.8)
+)
+
+(sumario_exemplo_bp <- exemplo_boxplot_df %>% 
+    group_by(PM) %>% 
+    summarize(
+      max = max(Stat1),
+      p95 = quantile(Stat1, 0.95),
+      p80 = quantile(Stat1, 0.8),
+      median = median(Stat1),
+      p20 = quantile(Stat1, 0.2),
+      p05 = quantile(Stat1, 0.05),
+      min = min(Stat1),
+    ) %>% 
+    t() %>% 
+    row_to_names(row_number = 1) %>% 
+    as.numeric()
+)
+
+
+(boxplot_example <- exemplo_boxplot_df %>% 
+    ggplot(
+      aes(
+        x = PM,
+        y = Stat1,
+      )
+    )+
+    stat_summary(
+      fun.data = f,
+      geom = 'errorbar',
+      width = 0.15,
+      position = position_dodge(width = 0.65),
+    )+
+    stat_summary(
+      fun.data = f,
+      geom = "boxplot",
+      width = 0.40,
+      fill = '#F8F8FF',
+      color = "black",
+      outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+    )+
+    labs(
+      title = "Elementos do *boxplot*",
+      x= NULL,
+      y= NULL
+    )+
+    ggbeeswarm::geom_quasirandom(
+      size = 1.4,
+      alpha = .3,
+      width = .07,
+    )+
+    scale_y_continuous(
+      expand = expansion(mult = c(0,0)),
+      n.breaks = 8,
+      limits = c(-0.3,12)
+    )+
+    annotate(
+      geom = "text",
+      x = 1.55,
+      hjust = "right",
+      y = sumario_exemplo_bp,
+      label = c("Valor máximo", "P95", "P80", "Mediana", "P20", "P05", "Valor mínimo"),
+      # fontface = 3
+    )+
+    geom_richtext(
+      x = 0.56,
+      y = 9.103998,
+      label.color = NA,
+      hjust = "center",
+      label = "<i>Outliers</i>"
+    )+
+    geom_curve(
+      aes(
+        x = 0.6, xend = 0.98,
+        y = 9.103998 , yend = 9.103998 , #Outliers
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    #definindo o [
+    geom_curve(
+      aes(
+        x = 0.74, xend = 0.78,
+        y = 6.683828, yend = 6.683828,
+      ),
+      curvature = 0,
+      size = 1.0,
+      lineend = "butt"
+    )+
+    geom_curve(
+      aes(
+        x = 0.74, xend = 0.74,
+        y = 3.545771, yend = 6.683828,
+      ),
+      curvature = 0,
+      size = 1.0,
+      lineend = "butt"
+    )+
+    annotate(
+      geom = "text",
+      x = 0.56,
+      hjust = "center",
+      y = 5.11,
+      label = "Amplitude\n(P80-P20)"
+    )+
+    geom_curve(
+      aes(
+        x = 0.74, xend = 0.78,
+        y = 3.545771 , yend = 3.545771 ,
+      ),
+      curvature = 0,
+      size = 1.0,
+      lineend = "butt"
+    )+
+    # fim do [
+    geom_curve(
+      aes(
+        x = 0.6, xend = 0.90,
+        y = 7.866927 , yend = 7.866927 , #whisker superior
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    annotate(
+      geom = "text",
+      x = 0.56,
+      hjust = "center",
+      y = 7.866927,
+      label = "Whisker\nsuperior"
+    )+
+    geom_curve(
+      aes(
+        x = 0.6, xend = 0.90,
+        y = 2.277104  , yend = 2.277104  , #whisker inferior
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    annotate(
+      geom = "text",
+      x = 0.56,
+      hjust = "center",
+      y = 2.277104,
+      label = "Whisker\ninferior"
+    )+
+    geom_curve(
+      aes(
+        x = 1.4, xend = 1.01,
+        y = 9.92343, yend = 9.92343, #valor máximo
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    geom_curve(
+      aes(
+        x = 1.45, xend = 1.11,
+        y = 7.866927 , yend = 7.866927 , #P95
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    geom_curve(
+      aes(
+        x = 1.45, xend = 1.22,
+        y = 6.683828  , yend = 6.683828  , #P80
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    geom_curve(
+      aes(
+        x = 1.45, xend = 1.22,
+        y = 4.886935   , yend = 4.886935   , #P50
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    geom_curve(
+      aes(
+        x = 1.45, xend = 1.22,
+        y = 3.545771, yend = 3.545771, #P20
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    geom_curve(
+      aes(
+        x = 1.45, xend = 1.11,
+        y = 2.277104, yend = 2.277104, #P05
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    geom_curve(
+      aes(
+        x = 1.4, xend = 1.01,
+        y = 1.282177, yend = 1.282177, #valor mínimo
+      ),
+      curvature = 0,
+      size = 1.0,
+      arrow = arrow(length = unit(0.05, "npc")),
+      lineend = "round"
+    )+
+    # theme_grafs()+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_markdown(
+          hjust = 0.5,
+          color = "black",
+          size = 19),
     )
-  )+
-  annotate("rect",
-           xmin = -Inf, xmax = Inf,
-           ymin = -Inf, ymax = 2,
-           alpha = 1,
-           fill = "#ac5079")+ #>pior classe
-  annotate("rect",
-           xmin = -Inf, xmax = Inf,
-           ymin = 2, ymax = 4,
-           alpha = 1,
-           fill = "#eb5661")+ #classe 4
-  annotate("rect",
-           xmin = -Inf, xmax = Inf,
-           ymin = 4, ymax = 5,
-           alpha = 1,
-           fill = "#fcf7ab")+ #classe 3
-  annotate("rect",
-           xmin = -Inf, xmax = Inf,
-           ymin = 5, ymax = 6,
-           alpha = 1,
-           fill = "#70c18c")+ #classe 2
-  annotate("rect",
-           xmin = -Inf, xmax = Inf,
-           ymin= 6, ymax = Inf,
-           alpha = 1,
-           fill = "#8dcdeb")+ #classe 1
-  stat_summary(
-    fun.data = f,
-    geom = 'errorbar',
-    width = 0.15,
-    position = position_dodge(width = 0.65),
-  )+
-  stat_summary(
-    fun.data = f,
-    geom = "boxplot",
-    width = 0.40,
-    fill = '#F8F8FF',
-    color = "black",
-    outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-  )+
-labs(
-  title = "Elementos do *boxplot*",
-  x= NULL,
-  y= NULL
-)+
-  ggbeeswarm::geom_quasirandom(
-    size = 1.2,
-    alpha = .25,
-    width = .07,
-  )+
-  scale_y_continuous(
-    expand = expansion(mult = c(0,0)),
-    n.breaks = 8,
-    limits = c(-0.3,14)
-  )+
-theme_grafs()+
-  theme(
-    plot.title = 
-      element_markdown(
-        hjust = 0.5,
-        color = "black",
-        size = 19),
-  )
 )
 ```
+
+```{r salvando graf elementos boxplot}
+ggsave(
+  filename = "exemplo_boxplot.png",
+  plot = boxplot_example,
+  units = c("px"),
+  width = (4500)/1.5,
+  height = (2993)/1.5,
+  path = "./graficos",
+  dpi = 300,
+  # type = "cairo"
+)
+```
+
 
 ```{r criando exemplo tipos boxplot tukey x garrett}
 set.seed(2021)
@@ -6052,7 +6234,6 @@ fig_tukey_garrett <- plot_grid(tukey_boxplot, box_percentile_plot,
                                labels = "AUTO")
 ```
 
-
 ```{r salvando graf exemplo boxplot}
 ggsave(
   filename = "tukey_n_boxplot.png",
@@ -6098,4 +6279,3 @@ ggsave(
   # type = "cairo"
 )
 ```
-
