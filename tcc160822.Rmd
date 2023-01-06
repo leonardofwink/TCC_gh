@@ -107,13 +107,14 @@ Some features that I want to add:
 # library(GGally)
 pacman::p_load(readr, rmarkdown, readxl,
                pillar, dplyr, tidyverse,
-               gapminder, knitr, kableExtra,
+               # gapminder, 
+               knitr, kableExtra, see,
                gridExtra, #modelsummary, 
                gtsummary, ggplot2,
-               ggbeeswarm, GGally,
+               ggbeeswarm, GGally, ggtext,
                report)
 # pacman::p_load(tibbletime)
-cite_packages()
+# cite_packages()
 ```
 
 ```{r cronometrando quanto tempo cada chunk leva}
@@ -141,8 +142,8 @@ knitr::opts_chunk$set(time_it = TRUE)
 
 ### referenciando os pacotes
 ```{r referenciando os pacotes}
-version$version.string
-citation(package = "tidyverse")
+# version$version.string
+# citation(package = "tidyverse")
 ```
 
 
@@ -496,7 +497,7 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
 # criando função para gerar boxplots com percentil 20 e 80
 ```{r funcao percentil 80}
 f <- function(x) {
-  r <- quantile(x, probs = c(0.10, 0.20, 0.50, 0.80, 0.90))
+  r <- quantile(x, probs = c(0.05, 0.20, 0.50, 0.80, 0.95))
   names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
   return(r)
 }
@@ -510,20 +511,27 @@ f <- function(x) {
 # y <- rnorm(100)
 # df <- data.frame(
 #   x = 1,
-#   y0 = min(y),
-#   y25 = quantile(y, 0.20),
+#   y0 = quantile(y, 0.05),
+#   y25 = quantile(y, 0.25),
 #   y50 = median(y),
-#   y75 = quantile(y, 0.80),
-#   y100 = max(y)
+#   y75 = quantile(y, 0.75),
+#   y100 = quantile(y, 0.95)
 # )
+# # pacman::p_load(ggbeeswarm)
 # ggplot(df, aes(x)) +
 #   geom_boxplot(
-#    aes(ymin = y0, lower = y25, middle = y50, upper = y75, ymax = y100),
-#    stat = "identity"
-#  )
-
+#     aes(ymin = y0, lower = y25, middle = y50, upper = y75, ymax = y100),
+#     stat = "identity"
+#   )
+# summary(y)
+# quantile(y, probs = c(0.05, 0.10, 0.25, 0.50, 0.75, 0.80, 0.90))
 # 
-(od <- plan_wide_19902020 %>%
+# summary(df)
+# od_p0520_80_95
+# od_p1020_80_90
+
+(od_p0520_80_95 <- plan_wide_19902020 %>%
+  filter(CODIGO == "87398900") %>% 
     ggplot(
       aes(
         x = CODIGO,
@@ -557,20 +565,20 @@ f <- function(x) {
              ymin= 6, ymax = Inf,
              alpha = 1,
              fill = "#8dcdeb")+ #classe 1
-    stat_boxplot(
-      geom = 'errorbar',
-      width = 0.3,
-      position = position_dodge(width = 0.65),
-      fun.data = f,
-    )+
-    stat_boxplot(
-      width = 0.7,
-      fill = '#F8F8FF',
-      color = "black",
-      fun.data = f,
-      geom = "boxplot",
-      outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-    )+
+   stat_summary(
+     fun.data = f,
+     geom = 'errorbar',
+     width = 0.3,
+     position = position_dodge(width = 0.65),
+   )+
+   stat_summary(
+     fun.data = f,
+     geom = "boxplot",
+     width = 0.7,
+     fill = '#F8F8FF',
+     color = "black",
+     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+   )+
     # geom_boxplot(
     #   # fill = '#F8F8FF',
     #   # color = "black",
@@ -619,16 +627,16 @@ f <- function(x) {
     values = c("black", "#303030", "#696969"),
     labels = c("1990-2000", "2000-2010", "2010-2020")
     )+
-    geom_smooth(
-      method = "lm",
-      se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-      aes(group = 1),
-      alpha = .5,
-      na.rm = TRUE,
-      size = 1
-    )+
-  theme_grafs()
-)
+   geom_smooth(
+     method = "lm",
+     se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+     aes(group = 1),
+     alpha = .5,
+     na.rm = TRUE,
+     size = 1
+   )+
+   theme_grafs()
+ )
 ```
 
 
@@ -2547,7 +2555,7 @@ ecoli__class <- function() {
                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
                 width= 0.7)+
    facet_wrap(~periodo)+
-   labs(title = "Escherichia coli no período 1990-2020",
+   labs(title = "*Escherichia coli* no período 1990-2020",
         x="Estação",
         y="NMP/100mL")+
    scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
@@ -2585,7 +2593,12 @@ ecoli__class <- function() {
           angle = 90, 
           # size=15,
           # face=2
-        )
+        ),
+        plot.title = 
+          element_markdown(
+            hjust = 0.5,
+            color = "black",
+            size = 19)
     )
 )
 ```
@@ -5789,8 +5802,131 @@ Os resultados apontam que para o parâmetro OD
 
 
 
+```{r}
+(data <- data.frame(
+  PM = c("PM1"),
+  # letras = letters[seq( from = 1, to = 1 )],
+  Stat1 = rnorm(100, 
+                mean=5, 
+                sd=3)
+) %>% 
+  # boxplot(data)
+  ggplot(
+    aes(
+      x = PM,
+      y = Stat1,
+      # color = periodo,
+      # fill = periodo
+    )
+  )+
+  annotate("rect",
+           xmin = -Inf, xmax = Inf,
+           ymin = -Inf, ymax = 2,
+           alpha = 1,
+           fill = "#ac5079")+ #>pior classe
+  annotate("rect",
+           xmin = -Inf, xmax = Inf,
+           ymin = 2, ymax = 4,
+           alpha = 1,
+           fill = "#eb5661")+ #classe 4
+  annotate("rect",
+           xmin = -Inf, xmax = Inf,
+           ymin = 4, ymax = 5,
+           alpha = 1,
+           fill = "#fcf7ab")+ #classe 3
+  annotate("rect",
+           xmin = -Inf, xmax = Inf,
+           ymin = 5, ymax = 6,
+           alpha = 1,
+           fill = "#70c18c")+ #classe 2
+  annotate("rect",
+           xmin = -Inf, xmax = Inf,
+           ymin= 6, ymax = Inf,
+           alpha = 1,
+           fill = "#8dcdeb")+ #classe 1
+  stat_summary(
+    fun.data = f,
+    geom = 'errorbar',
+    width = 0.3,
+    position = position_dodge(width = 0.65),
+  )+
+  stat_summary(
+    fun.data = f,
+    geom = "boxplot",
+    width = 0.5,
+    fill = '#F8F8FF',
+    color = "black",
+    outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+  )+
+  # geom_boxplot(
+  #   # fill = '#F8F8FF',
+  #   # color = "black",
+  # outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+  #   # width = 0.7
+  #   stat = "identity"
+  # )+
+  # stat_summary(
+  #   fun.data = median_hilow,
+  #   fun.args = 0.6,
+  #   show.legend = FALSE,
+#   geom = "crossbar",
+#   fill = '#F8F8FF',
+#   color = "black",
+#   outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+#   width = 0.7
+#  )+
+# facet_wrap(~periodo)+
+labs(
+  title = "Elementos do *boxplot*",
+  x= NULL,
+  y= NULL
+)+
+  ggbeeswarm::geom_quasirandom(
+    size = 1.2,
+    alpha = .25,
+    width = .07,
+  )+
+  scale_y_continuous(
+    expand = expansion(mult = c(0,0)),
+    n.breaks = 8,
+    limits = c(-0.3,14)
+  )+
+  # scale_x_discrete(limits = c("87398500",
+  #                             "87398980",
+  #                             "87398900",
+  #                             "87398950",
+  #                             "87405500",
+  #                             "87406900",
+  #                             "87409900"),
+  #                  labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+  # )+
+  # scale_fill_brewer(palette = "Set1")+
+  # scale_color_manual(name = "Período",
+# breaks = c("p1", "p2", "p3"),
+# values = c("black", "#303030", "#696969"),
+# labels = c("1990-2000", "2000-2010", "2010-2020")
+# )+
+# geom_smooth(
+#   method = "lm",
+#   se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+#   aes(group = 1),
+#   alpha = .5,
+#   na.rm = TRUE,
+#   size = 1
+# )+
+theme_grafs()+
+  theme(
+    plot.title = 
+      element_markdown(
+        hjust = 0.5,
+        color = "black",
+        size = 19),
+  )
+)
 
-
-
-
+data <- data.frame(Stat1=rnorm(10,mean=3,sd=2),
+                   Stat2=rnorm(10,mean=4,sd=1),
+                   Stat3=rnorm(10,mean=6,sd=0.5),
+                   Stat4=rnorm(10,mean=3,sd=0.5))
+```
 
