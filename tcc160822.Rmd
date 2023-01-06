@@ -49,9 +49,7 @@ The logic behind the sorting in the boxplots is because of 2 main reasons:
 1.  The original monitoring point isn't easy to understand (8 digits, like 87409900)
 2.  Changing the original nomenclature to PM1, PM2 (...) makes it easier to understand that the last point has water contributions of every other point upstream.
 
-Some features that I want to add:
-- If the parameter is x, then use x's classes (with its own classes background color plotted)
-- Define the timescale, should act just like a filter
+Some features that I want to add: - If the parameter is x, then use x's classes (with its own classes background color plotted) - Define the timescale, should act just like a filter
 
 ```{r p1 example, eval=FALSE}
 # plan_wide_19902020 %>%
@@ -74,7 +72,7 @@ Some features that I want to add:
 -   descobrir como conseguir a equação do lm
 -   ~~aprender a pivotar o sumário~~ -\> meu sumário do google docs ta batendo direitinho com o do R
 -   descobrir se há outros TCCs com disponibilização de códigos
--   `Namon` tá com com casa decimal `","` e `ptot` tá com `"."`
+-   ~~`Namon` tá com com casa decimal `","` e `ptot` tá com `"."`~~
 -   correlação forte entre condutividade e Namon/Ptot/DBO
 
 | 1990-2000 | 2000-2010 | 2010-2020 |
@@ -90,28 +88,14 @@ Some features that I want to add:
 ## acessar os pacotes
 
 ```{r Acessar os pacotes, message = FALSE, warning = TRUE}
-# library(readr)
-# library(rmarkdown)
-# # library(qboxplot)
-# library(readxl)
-# library(pillar)
-# library(dplyr)
-# library(tidyverse)
-# library(gapminder)
-# library(knitr)
-# library(kableExtra)
 # library(ggpubr)
-# library(gridExtra)
-# library(modelsummary)
-# library(gtsummary)
-# library(GGally)
-pacman::p_load(readr, rmarkdown, readxl,
+pacman::p_load(readr, rmarkdown, readxl, janitor,
                pillar, dplyr, tidyverse,
                # gapminder, 
                knitr, kableExtra, see,
                gridExtra, #modelsummary, 
                gtsummary, ggplot2,
-               ggbeeswarm, GGally, ggtext,
+               ggbeeswarm, GGally, ggtext, cowplot,
                report)
 # pacman::p_load(tibbletime)
 # cite_packages()
@@ -141,11 +125,11 @@ knitr::opts_chunk$set(time_it = TRUE)
 ```
 
 ### referenciando os pacotes
+
 ```{r referenciando os pacotes}
 # version$version.string
 # citation(package = "tidyverse")
 ```
-
 
 ## importando a planilha
 
@@ -218,8 +202,8 @@ paged_table(plan_wide_19902020,
 
 # data wrangling
 
+Como há dados faltantes, no cálculo entre o produto das colunas, o R acaba interpretando como se fosse zero, mas na verdade é `NA`.
 ```{r data wrangling}
-# Como há dados faltantes, no cálculo entre o produto das colunas, ele acaba interpretando como se fosse zero, mas na verdade é NA
 plan_wide_19902020 <- plan_wide_19902020 %>% 
    mutate(IQA = ifelse(IQA == 0, NA, IQA))
 
@@ -495,6 +479,7 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
 ```
 
 # criando função para gerar boxplots com percentil 20 e 80
+
 ```{r funcao percentil 80}
 f <- function(x) {
   r <- quantile(x, probs = c(0.05, 0.20, 0.50, 0.80, 0.95))
@@ -639,7 +624,6 @@ f <- function(x) {
  )
 ```
 
-
 ```{r Gráfico OD periodo 1, echo = FALSE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2000"}
 (od_p1 <- ggplot(plan_wide_19902020 %>% 
                     filter(ANO_COLETA > "1990" &
@@ -718,7 +702,6 @@ f <- function(x) {
    theme_grafs()
 )
 ```
-
 
 ```{r Gráfico OD periodo 2, echo = FALSE, warning=FALSE, message = FALSE}
 (od_p2 <-ggplot(plan_wide_19902020 %>% 
@@ -800,7 +783,6 @@ f <- function(x) {
     theme_grafs()
 )
 ```
-
 
 ```{r Gráfico OD periodo 3, echo = FALSE, warning=FALSE, message = FALSE}
 (od_p3 <-ggplot(plan_wide_19902020 %>% 
@@ -1457,7 +1439,6 @@ grid.arrange(iqaod_p1, iqaod_p2, iqaod_p3, ncol = 3)
 # # install.packages("ggpubr")
 # # library(ggpubr)
 ```
-
 
 ### Demanda Bioquímica de Oxigênio
 
@@ -3025,7 +3006,6 @@ periodo_inicial <- as.Date("1990-01-01", "%Y-%m-%d")
 periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
 
 (nitro_line <- 
-    
     plan_wide_19902020 %>%
     filter(ANO_COLETA > "1990" &
              ANO_COLETA <= "2020") %>%
@@ -3136,7 +3116,6 @@ periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
     theme_bw()
 )
 ```
-
 
 ```{r Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
 (namon_p1 <- ggplot(plan_wide_19902020 %>% 
@@ -3603,7 +3582,6 @@ ggsave("namon_3periodos.png",
   theme_bw()
 )
 ```
-
 
 ```{r Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
 (turb_p1 <- ggplot(plan_wide_19902020 %>% 
@@ -5396,6 +5374,7 @@ str(
 ```
 
 ### Condutividade elétrica
+
 ```{r Gráfico cond_elet facetted, fig.cap="condutividade-eletrica-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
 (cond_elet <- ggplot(plan_wide_19902020,
                         aes(CODIGO,
@@ -5787,36 +5766,27 @@ ggsave("cond_elet_3periodos.png",
 
 ```
 
-
 ## Textando o texto
 
-* § falar do comportamento geral dos dados
-* 2º § - xº § -> abordar os principais parâmetros que estão sendo impactados, detalhando, nas estações mais relevantes, como ficaram os quartis/mediana etc.
-
-
+-   § falar do comportamento geral dos dados
+-   2º § - xº § -\> abordar os principais parâmetros que estão sendo impactados, detalhando, nas estações mais relevantes, como ficaram os quartis/mediana etc.
 
 `r sum_od_p1$PM1[1]`
 
 Os resultados apontam que para o parâmetro OD
 
-
-
-
-```{r}
-(data <- data.frame(
+```{r elementos do boxplot}
+(boxplot_example <- data.frame(
   PM = c("PM1"),
   # letras = letters[seq( from = 1, to = 1 )],
   Stat1 = rnorm(100, 
                 mean=5, 
                 sd=3)
 ) %>% 
-  # boxplot(data)
   ggplot(
     aes(
       x = PM,
       y = Stat1,
-      # color = periodo,
-      # fill = periodo
     )
   )+
   annotate("rect",
@@ -5847,35 +5817,17 @@ Os resultados apontam que para o parâmetro OD
   stat_summary(
     fun.data = f,
     geom = 'errorbar',
-    width = 0.3,
+    width = 0.15,
     position = position_dodge(width = 0.65),
   )+
   stat_summary(
     fun.data = f,
     geom = "boxplot",
-    width = 0.5,
+    width = 0.40,
     fill = '#F8F8FF',
     color = "black",
     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
   )+
-  # geom_boxplot(
-  #   # fill = '#F8F8FF',
-  #   # color = "black",
-  # outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-  #   # width = 0.7
-  #   stat = "identity"
-  # )+
-  # stat_summary(
-  #   fun.data = median_hilow,
-  #   fun.args = 0.6,
-  #   show.legend = FALSE,
-#   geom = "crossbar",
-#   fill = '#F8F8FF',
-#   color = "black",
-#   outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-#   width = 0.7
-#  )+
-# facet_wrap(~periodo)+
 labs(
   title = "Elementos do *boxplot*",
   x= NULL,
@@ -5891,29 +5843,6 @@ labs(
     n.breaks = 8,
     limits = c(-0.3,14)
   )+
-  # scale_x_discrete(limits = c("87398500",
-  #                             "87398980",
-  #                             "87398900",
-  #                             "87398950",
-  #                             "87405500",
-  #                             "87406900",
-  #                             "87409900"),
-  #                  labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-  # )+
-  # scale_fill_brewer(palette = "Set1")+
-  # scale_color_manual(name = "Período",
-# breaks = c("p1", "p2", "p3"),
-# values = c("black", "#303030", "#696969"),
-# labels = c("1990-2000", "2000-2010", "2010-2020")
-# )+
-# geom_smooth(
-#   method = "lm",
-#   se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-#   aes(group = 1),
-#   alpha = .5,
-#   na.rm = TRUE,
-#   size = 1
-# )+
 theme_grafs()+
   theme(
     plot.title = 
@@ -5923,10 +5852,250 @@ theme_grafs()+
         size = 19),
   )
 )
+```
 
-data <- data.frame(Stat1=rnorm(10,mean=3,sd=2),
-                   Stat2=rnorm(10,mean=4,sd=1),
-                   Stat3=rnorm(10,mean=6,sd=0.5),
-                   Stat4=rnorm(10,mean=3,sd=0.5))
+```{r criando exemplo tipos boxplot tukey x garrett}
+set.seed(2021)
+
+data <- tibble(
+  grupo = factor(
+    c(rep(
+      "Grupo 1", 100), 
+      rep("Grupo 2", 250), 
+      rep("Grupo 3", 25)
+    )
+  ),
+  valor = c(seq(0, 20, length.out = 100),
+            c(rep(0, 5), 
+              rnorm(30, 2, .1), 
+              rnorm(90, 5.4, .1), 
+              rnorm(90, 14.6, .1), 
+              rnorm(30, 18, .1), 
+              rep(20, 5)
+            ),
+            rep(seq(0, 20, length.out = 5), 5))
+) %>% 
+  rowwise() %>%
+  mutate(
+    valor = if_else(
+      grupo == "Grupo 2", valor + rnorm(1, 0, .4), 
+      valor
+      )
+    )
+
+## function to return median and labels
+n_fun <- function(x){
+  return(
+    data.frame(
+      y = median(x) - 1.25, 
+      label = paste0(
+        "n = ",length(x)
+      )
+    )
+  )
+}
+```
+
+```{r tukey boxplot}
+(tukey_n_boxplot <- ggplot(data, 
+                           aes(x = grupo, 
+                               y = valor)
+)+
+  stat_boxplot(geom = 'errorbar',
+               width = 0.15,
+               position = position_dodge(width = 0.65))+
+  geom_boxplot(fill = "grey92",
+               width = 0.40,
+               position = position_dodge(width = 0.65))+
+  ## use summary function to add text labels
+  stat_summary(
+    geom = "text",
+    fun.data = n_fun,
+    family = "Oswald",
+    size = 5
+  )+
+  labs(
+    title = "Tukey *boxplot*",
+    x= NULL,
+    # y="mg/L"
+  )+
+  # theme_grafs()+
+  theme_bw()+
+  theme(
+    axis.text.y = element_text(
+      angle = 90, 
+      # size=15,
+      # face=2
+    ),
+    plot.title = 
+      element_markdown(
+        hjust = 0.5,
+        color = "black",
+        size = 19)
+  )
+)
+
+
+(tukey_boxplot <- ggplot(data, aes(x = grupo, 
+                                   y = valor)) +
+  stat_boxplot(geom = 'errorbar',
+               width = 0.15,
+               position = position_dodge(width = 0.65))+
+  geom_boxplot(fill = "grey92",
+               width = 0.40,
+               position = position_dodge(width = 0.65)) +
+  ## use either geom_point() or geom_jitter()
+  geom_point(
+    ## draw bigger points
+    size = 2,
+    ## add some transparency
+    alpha = .25,
+    ## add some jittering
+    position = position_jitter(
+      ## control randomness and range of jitter
+      seed = 1, width = .2
+    )
+  )+
+  theme_bw()+
+  labs(
+      title = "Tukey *boxplot*",
+      x= NULL,
+      # y="mg/L"
+    )+
+  # theme_grafs()+
+  theme_bw()+
+  theme(
+        axis.text.y = element_text(
+          angle = 90, 
+          # size=15,
+          # face=2
+        ),
+        plot.title = 
+          element_markdown(
+            hjust = 0.5,
+            color = "black",
+            size = 19)
+    ))
+```
+
+```{r garrett boxplot}
+data %>% 
+  group_by(grupo) %>% 
+  summarize(
+    min = min(valor),
+    P20 = quantile(valor, 0.20),
+    q1 = quantile(valor, 0.25),
+    mediana = median(valor),
+    q3 = quantile(valor, 0.75),
+    P80 = quantile(valor, 0.80),
+    max = max(valor)
+  ) %>% 
+  t() %>% 
+  row_to_names(row_number = 1)
+  
+  
+(box_percentile_plot <- ggplot(data, 
+       aes(x = grupo, y = valor)
+       ) +
+      stat_summary(
+        fun.data = f,
+        geom = 'errorbar',
+        width = 0.15,
+        position = position_dodge(width = 0.65),
+      )+
+      stat_summary(
+        fun.data = f,
+        geom = "boxplot",
+        width = 0.40,
+        fill = 'grey92',
+        color = "black",
+        outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+      )+
+  # geom_boxplot(fill = "grey92") +
+  ## use either geom_point() or geom_jitter()
+  geom_point(
+    ## draw bigger points
+    size = 2,
+    ## add some transparency
+    alpha = .25,
+    ## add some jittering
+    position = position_jitter(
+      ## control randomness and range of jitter
+      seed = 1, width = .2
+    )
+  )+
+  labs(
+      title = "*Box Percentile-Plot*",
+      x= NULL,
+      # y="mg/L"
+    )+
+  # theme_grafs()+
+  theme_bw()+
+  theme(
+        axis.text.y = element_text(
+          angle = 90, 
+          # size = 15,
+          # face = 2
+        ),
+        plot.title = 
+          element_markdown(
+            hjust = 0.5,
+            color = "black",
+            size = 19)
+    )
+  )
+grid.arrange(
+  tukey_boxplot, box_percentile_plot, 
+  ncol = 2
+  )
+fig_tukey_garrett <- plot_grid(tukey_boxplot, box_percentile_plot, 
+                               labels = "AUTO")
+```
+
+
+```{r salvando graf exemplo boxplot}
+ggsave(
+  filename = "tukey_n_boxplot.png",
+  plot = tukey_n_boxplot,
+  units = c("px"),
+  width = 4500,
+  height = 2993,
+  path = "./graficos",
+  dpi = 300,
+  # type = "cairo"
+)
+
+ggsave(
+  filename = "tukey_boxplot.png",
+  plot = tukey_boxplot,
+  units = c("px"),
+  width = 4500,
+  height = 2993,
+  path = "./graficos",
+  dpi = 300,
+  # type = "cairo"
+)
+
+ggsave(
+  filename = "box_percentile_plot.png",
+  plot = box_percentile_plot,
+  units = c("px"),
+  width = 4500,
+  height = 2993,
+  path = "./graficos",
+  dpi = 300,
+  # type = "cairo"
+)
+
+ggsave(
+  filename = "fig_tukey_garrett.png",
+  plot = fig_tukey_garrett,
+  units = c("px"),
+  width = 4500,
+  height = 2993,
+  path = "./graficos",
+  dpi = 300,
+  # type = "cairo"
+)
 ```
 
