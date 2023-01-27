@@ -46,20 +46,13 @@ The river flows in the east-west direction as shown in the image below.
 
 The logic behind the sorting in the boxplots is because of 2 main reasons:
 
-1.  The original monitoring point isn't easy to understand (8 digits, like 87409900)
+1.  The original monitoring point isn't easy to understand (8 digits, like `87409900`)
 2.  Changing the original nomenclature to PM1, PM2 (...) makes it easier to understand that the last point has water contributions of every other point upstream.
 
 Some features that I want to add:
 
 -   If the parameter is x, then use x's classes (with its own classes background color plotted)
 
--   Define the timescale, should act just like a filter
-
-```{r p1 example, eval=FALSE}
-# plan_wide_19902020 %>%
-#   filter(ano_coleta > "1990" &
-#          ano_coleta <= "2000")
-```
 
 # Anotações de coisas por fazer:
 
@@ -92,10 +85,8 @@ Some features that I want to add:
 ## acessar os pacotes
 
 ```{r Acessar os pacotes, message = FALSE, warning = TRUE}
-# library(ggpubr)
 pacman::p_load(readr, rmarkdown, readxl, janitor,
                pillar, dplyr, tidyverse,
-               # gapminder, 
                knitr, kableExtra, see,
                gridExtra, #modelsummary, 
                gtsummary, ggplot2,
@@ -116,7 +107,7 @@ knitr::knit_hooks$set(time_it = local({
          # calculate the time difference after a chunk
          res <- difftime(Sys.time(), now)
          # return a character string to show the time
-         paste("Time for this code chunk to run:", res)
+         paste("Tempo para esse code chunk ser rodado:", round(res, digits = 2), "s")
       }
    }
 }))
@@ -131,7 +122,7 @@ knitr::opts_chunk$set(time_it = TRUE)
 ### referenciando os pacotes
 
 ```{r referenciando os pacotes}
-# version$version.string
+version$version.string
 # citation(package = "tidyverse")
 ```
 
@@ -178,7 +169,8 @@ plan_wide_19902020 <- read_delim("https://raw.githubusercontent.com/leonardofwin
       codigo == "87409900" ~ "PM7"
     )
   ) %>% 
-  select(codigo, ponto_monitoramento, everything()) #reordenando colunas
+  select(codigo, ponto_monitoramento, everything()) %>% #reordenando colunas
+  arrange(data_coleta, ponto_monitoramento)
 # teste <- plan_wide_19902020 %>%
 #   dplyr::filter(data_coleta >= as.POSIXct("2010-01-01")) #this works
 ```
@@ -219,7 +211,9 @@ parametros_IQA <- plan_wide_19902020 %>%
 write.csv(parametros_IQA,
           "./parametros_IQA.csv",
           row.names = FALSE)
+```
 
+```{r futuro calculo de IQA, include = FALSE}
 plan_wide_19902020 %>% 
   select(starts_with("iqa_")) %>% 
   mutate(
@@ -227,7 +221,7 @@ plan_wide_19902020 %>%
   )
 ```
 
-```{r Códigos Git, echo = FALSE}
+```{r Códigos Git, echo = FALSE, include=FALSE}
 # cd myrepo
 # ls
 # head README.md
@@ -239,7 +233,7 @@ plan_wide_19902020 %>%
 # rm -rf myrepo/ #remover/apagar a pasta myrepo
 ```
 
-```{r Aprendendo Git, echo = FALSE}
+```{r Aprendendo Git, echo = FALSE, include=FALSE}
 # slides da bia que ajudam mt
 # https://beatrizmilz.github.io/slidesR/git_rstudio/11-2021-ENCE.html#20
 # aprendendo a sincronizar usando esse guia -> 
@@ -281,7 +275,7 @@ plan_wide_19902020 %>%
 
 ```{r setting theme}
 theme_grafs <- function(bg = "white", 
-                        coloracao_letra = "black") {
+                        coloracao_letra = "black"){
   theme(
     plot.title = 
       element_text(
@@ -323,7 +317,7 @@ theme_grafs <- function(bg = "white",
 
 # setting different timescales
 
-```{r setting periodos, echo = FALSE}
+```{r setting periodos, echo = TRUE}
 plan_wide_19902020 <- plan_wide_19902020 %>% 
   mutate(
     periodo = if_else(
@@ -375,8 +369,8 @@ sumario <- function(dados = plan_wide_19902020, parametro = "") {
 }
 ```
 
+# Funções
 
-# Funções 
 ## criando função para gerar boxplots com percentil 20 e 80
 
 ```{r funcao percentil 80}
@@ -387,8 +381,9 @@ f <- function(x) {
 }
 ```
 
-## criando função para gerar gráfico de od
-```{r gerando function graf od, echo = FALSE}
+## Oxigênio Dissolvido
+
+```{r gerando function graf od, echo = TRUE}
 boxplot_od <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = oxigenio_dissolvido, titulo = "Oxigênio Dissolvido"){
   ggplot2::ggplot(
     data = dados,
@@ -473,8 +468,9 @@ boxplot_od <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = oxi
 }
 ```
 
-## criando função para gerar gráfico de dbo
-```{r gerando function graf dbo, echo = FALSE}
+## DBO
+
+```{r gerando function graf dbo, echo = TRUE}
 boxplot_dbo <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = dbo, titulo = "Demanda Bioquímica de Oxigênio"){
   ggplot2::ggplot(
     data = dados,
@@ -552,7 +548,8 @@ boxplot_dbo <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = db
 ```
 
 ## Ptot
-```{r gerando function graf ptot, echo = FALSE}
+
+```{r gerando function graf ptot, echo = TRUE}
 boxplot_ptot <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = fosforo_total, titulo = "Fósforo total"){
   ggplot2::ggplot(
     data = dados,
@@ -633,7 +630,8 @@ boxplot_ptot <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = f
 ```
 
 ## E coli
-```{r funcao-graf-ecoli, echo = FALSE}
+
+```{r funcao-graf-ecoli, echo = TRUE}
 boxplot_ecoli <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = escherichia_coli, titulo = "*Escherichia coli*"){
   ggplot2::ggplot(
     data = dados,
@@ -726,7 +724,8 @@ boxplot_ecoli <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = 
 ```
 
 ## Nitrogênio Amoniacal
-```{r}
+
+```{r gerando function graf namon, echo = TRUE}
 boxplot_namon <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = nitrogenio_amoniacal, titulo = "Nitrogênio Amoniacal"){
   ggplot2::ggplot(
     data = dados,
@@ -808,7 +807,7 @@ boxplot_namon <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = 
 
 ## Turbidez
 
-```{r}
+```{r gerando function graf turb, echo = TRUE}
 boxplot_turb <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = turbidez, titulo = "Turbidez"){
   ggplot2::ggplot(
     data = dados,
@@ -886,21 +885,235 @@ boxplot_turb <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = t
 
 ```
 
-
 ## pH
+
+```{r gerando function graf pH, echo = TRUE}
+boxplot_pH <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = pH, titulo = "pH"){
+  ggplot2::ggplot(
+    data = dados,
+    aes(
+      x = {{eixo_x}},
+      y = {{eixo_y}}
+    )
+  )+
+    annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = -Inf, ymax = 6,
+            alpha = 1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = 9, ymax = Inf,
+            alpha = 1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = 6, ymax = 9,
+            alpha = 1,
+            fill="#8dcdeb")+ #classe 1
+    stat_summary(
+      fun.data = f,
+      geom = 'errorbar',
+      width = 0.3,
+      position = position_dodge(width = 0.65),
+    )+
+    stat_summary(
+      fun.data = f,
+      geom = "boxplot",
+      width = 0.7,
+      fill = '#F8F8FF',
+      color = "black",
+      outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+    )+
+    labs(
+      title = titulo,
+      x= NULL,
+      y="mg/L"
+    )+
+    ggbeeswarm::geom_quasirandom(
+      size = 1.2,
+      alpha = .25,
+      width = .07,
+    )+
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
+                      n.breaks = 8,
+                      limits = c(4,11),
+                      labels = scales::number_format(accuracy = 1,
+                                                     decimal.mark = ",",
+                                                     big.mark = " "))+
+    scale_x_discrete(limits = c("87398500",
+                                "87398980",
+                                "87398900",
+                                "87398950",
+                                "87405500",
+                                "87406900",
+                                "87409900"),
+                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+    )+
+    geom_smooth(
+      method = "lm",
+      se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+      aes(group = 1),
+      alpha = .5,
+      na.rm = TRUE,
+      size = 1
+    )+
+    theme_grafs()
+}
+```
 
 ## Sólidos Totais
 
+```{r gerando function graf SolTot, echo = TRUE}
+boxplot_solidos_totais <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = solidos_totais, titulo = "Sólidos totais"){
+  ggplot2::ggplot(
+    data = dados,
+    aes(
+      x = {{eixo_x}},
+      y = {{eixo_y}}
+    )
+  )+
+   annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = 500, ymax = Inf,
+            alpha = 1,
+            fill = "#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = 0, ymax = 500,
+            alpha = 1,
+            fill = "#8dcdeb")+ #classe 1
+   stat_summary(
+     fun.data = f,
+     geom = 'errorbar',
+     width = 0.3,
+     position = position_dodge(width = 0.65),
+   )+
+   stat_summary(
+     fun.data = f,
+     geom = "boxplot",
+     width = 0.7,
+     fill = '#F8F8FF',
+     color = "black",
+     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+   )+
+   labs(title = titulo,
+        x= NULL,
+        y="")+
+   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
+                      n.breaks = 8,
+                      limits = c(min(plan_wide_19902020$solidos_totais, na.rm = TRUE),
+                                 max(plan_wide_19902020$solidos_totais, na.rm = TRUE)),
+                      labels = scales::number_format(accuracy = 1,
+                                                     decimal.mark = ",",
+                                                     big.mark = " "),
+                      trans = "log10")+
+   ggbeeswarm::geom_quasirandom(
+     size = 1.2,
+     alpha = .25,
+     width = .07,
+   )+
+   scale_x_discrete(limits = c("87398500", 
+                               "87398980", 
+                               "87398900", 
+                               "87398950", 
+                               "87405500", 
+                               "87406900", 
+                               "87409900"),
+                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+   )+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   theme_grafs()
+}
+```
+
 ## Condutividade
+
+```{r gerando function graf condutividade-eletrica, echo = TRUE}
+boxplot_cond_elet <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = condutividade, titulo = "Condutividade elétrica"){
+  ggplot2::ggplot(
+    data = dados,
+    aes(
+      x = {{eixo_x}},
+      y = {{eixo_y}}
+    )
+  )+
+   annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = 500, ymax = Inf,
+            alpha = 1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin = -Inf, xmax = Inf,
+            ymin = 0, ymax = 500,
+            alpha = 1,
+            fill="#8dcdeb")+ #classe 1
+   stat_summary(
+     fun.data = f,
+     geom = 'errorbar',
+     width = 0.3,
+     position = position_dodge(width = 0.65),
+   )+
+   stat_summary(
+     fun.data = f,
+     geom = "boxplot",
+     width = 0.7,
+     fill = '#F8F8FF',
+     color = "black",
+     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+   )+
+      labs(title = titulo,
+        x="Estação",
+        y="µmhos/cm")+
+   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
+                      n.breaks = 8,
+                      limits = c(
+                        # min(plan_wide_19902020$condutividade, na.rm = TRUE),
+                        5,
+                        1000
+                        # max(plan_wide_19902020$condutividade, na.rm = TRUE)
+                      ),
+                      labels = scales::number_format(accuracy = 1,
+                                                     decimal.mark = ",",
+                                                     big.mark = " "),
+                      trans = "log10")+
+    ggbeeswarm::geom_quasirandom(
+     size = 1.2,
+     alpha = .25,
+     width = .07,
+   )+
+   scale_x_discrete(limits = c("87398500", 
+                               "87398980", 
+                               "87398900", 
+                               "87398950", 
+                               "87405500", 
+                               "87406900", 
+                               "87409900"),
+                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+   )+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               size = 1)+
+   theme_grafs()
+}
+```
 
 # Parâmetros físico-químicos
 
 ### Oxigênio Dissolvido
 
-```{r Gráfico OD facetted, echo = FALSE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2020"}
+```{r Gráfico OD facetted, echo = TRUE, warning=FALSE, message = FALSE, fig.cap="Oxigênio Dissolvido no período 1990-2020"}
 (od <- plan_wide_19902020 %>% 
    boxplot_od(
-     titulo = "Oxigênio Dissolvido no período 1990-2020"
+     titulo = "Oxigênio Dissolvido no período 1990-2020",
    )+
    facet_wrap(~periodo)
 )
@@ -1046,7 +1259,7 @@ ggsave("od_p3.png",
        aes(group=1),
        alpha=.5,
        na.rm = TRUE,
-       size = 1
+       linewidth = 1
     )+
     theme_grafs()
 )
@@ -1128,7 +1341,7 @@ ggsave("od_p3.png",
        aes(group=1),
        alpha=.5,
        na.rm = TRUE,
-       size = 1
+       linewidth = 1
     )+
     theme_grafs()
 )
@@ -1211,7 +1424,7 @@ ggsave("od_p3.png",
        aes(group=1),
        alpha=.5,
        na.rm = TRUE,
-       size = 1
+       linewidth = 1
     )+
     theme_grafs()
 )
@@ -1377,299 +1590,42 @@ ggsave("od_p3.png",
 
 ### Demanda Bioquímica de Oxigênio
 
-```{r Gráfico DBO facetted, fig.cap="Demanda Bioquímica de Oxigênio no período 1990-2020"}
-(dbo <- ggplot(plan_wide_19902020,
-               aes(x = codigo,
-                   y = dbo))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=10,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=5,
-            ymax=10,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=3,
-            ymax=5,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=3,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
-   )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-   labs(title = "Demanda Bioquímica de Oxigênio no período 1990-2020",
-        x="Estação",
-        y="mg/L",
-        # caption = "Leonardo Fernandes Wink"
-        )+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                      n.breaks = 8,
-                      limits = c(1,100),
-                      trans = "log10")+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+```{r Gráfico DBO facetted, echo = TRUE, fig.cap="Demanda Bioquímica de Oxigênio no período 1990-2020"}
+(dbo <- plan_wide_19902020 %>% 
+  boxplot_dbo(
+    titulo = "Demanda Bioquímica de Oxigênio no período 1990-2020",
+  )+
+  facet_wrap(~periodo)
+ )
 ```
 
 ```{r Gráfico DBO período1, echo = FALSE, warning = FALSE, message = FALSE}
-(dbo_p1<-ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta>"1990" &
-                             ano_coleta<="2000"),
-                aes(codigo,
-                    dbo))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=10,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=5,
-             ymax=10,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=3,
-             ymax=5,
-             alpha=1,
-             fill="#70c18c")+ #classe 2
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=3,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Demanda Bioquímica de Oxigênio no período 1990-2000",
-         x="Estação",
-         y="mg/L")+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                       n.breaks = 8,
-                       limits = c(1,100),
-                       trans = "log10")+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+(dbo_p1 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"1990" &
+            ano_coleta<="2000") %>% 
+   boxplot_dbo(
+    titulo = "Demanda Bioquímica de Oxigênio no período 1990-2000",
+  )
 )
 ```
 
 ```{r Gráfico DBO período2, echo = FALSE, warning = FALSE, message = FALSE}
-(dbo_p2<-ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta>"2000" &
-                             ano_coleta<="2010"),
-                aes(codigo,
-                    dbo))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=10,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=5,
-             ymax=10,
-             alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=3,
-            ymax=5,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=3,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Demanda Bioquímica de Oxigênio no período 2000-2010",
-        x="Estação",
-        y="mg/L")+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                       n.breaks = 8,
-                       limits = c(1,100),
-                       trans = "log10")+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+(dbo_p2 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2000" &
+            ano_coleta<="2010") %>% 
+   boxplot_dbo(
+    titulo = "Demanda Bioquímica de Oxigênio no período 2000-2010",
+  )
 )
 ```
 
 ```{r Gráfico DBO período3, echo = FALSE, warning = FALSE, message = FALSE}
-(dbo_p3<-ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta>"2010" &
-                             ano_coleta<="2020"),
-                aes(codigo,
-                    dbo, na.rm=TRUE))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=10,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=5,
-             ymax=10,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=3,
-             ymax=5,
-             alpha=1,
-             fill="#70c18c")+ #classe 2
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=3,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Demanda Bioquímica de Oxigênio no período 2010-2020",
-         x="Estação",
-         y="mg/L")+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                       n.breaks = 8,
-                       limits = c(1,100),
-                       trans = "log10")+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-        geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+(dbo_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2010" &
+            ano_coleta<="2020") %>% 
+   boxplot_dbo(
+    titulo = "Demanda Bioquímica de Oxigênio no período 2010-2020",
+  )
 )
 ```
 
@@ -1747,7 +1703,7 @@ ggsave("od_p3.png",
                 aes(group=1),
                 alpha=.5,
                 na.rm = TRUE,
-                size = 1)+
+                linewidth = 1)+
     theme_grafs()
 )
 ```
@@ -1826,7 +1782,7 @@ ggsave("od_p3.png",
                 aes(group=1),
                 alpha=.5,
                 na.rm = TRUE,
-                size = 1)+
+                linewidth = 1)+
     theme_grafs()
 )
 ```
@@ -1905,7 +1861,7 @@ ggsave("od_p3.png",
                 aes(group=1),
                 alpha=.5,
                 na.rm = TRUE,
-                size = 1)+
+                linewidth = 1)+
     theme_grafs()
 )
 ```
@@ -2021,281 +1977,43 @@ ggsave("dbo_p3.png",
 
 ### Fósforo total
 
-```{r Gráfico fósforo total facetted, fig.cap="Fósforo total no período 1990-2020"}
-(ptot <- ggplot(plan_wide_19902020,
-                aes(codigo,
-                    fosforo_total))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0.15,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0.1,
-            ymax=0.15,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=0.1,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-  stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
+```{r Gráfico fósforo total facetted, echo = TRUE, fig.cap="Fósforo total no período 1990-2020"}
+(ptot <- plan_wide_19902020 %>% 
+   boxplot_ptot(
+     titulo = "Fósforo total no período 1990-2020",
    )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-  facet_wrap(~periodo)+
-    labs(title = "Fósforo total no período 1990-2020",
-         x="Estação",
-         y="mg/L")+
-   scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                      n.breaks = 8,
-                      limits = c(min(plan_wide_19902020$fosforo_total, na.rm = TRUE),
-                                 max(plan_wide_19902020$fosforo_total), na.rm = TRUE),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = .001,
-                                                     decimal.mark = ",",
-                                                     big.mark = " ")
-                      )+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+   facet_wrap(~periodo)
 )
 ```
 
-```{r Gráfico Fósforo total periodo1, warning = FALSE, message = FALSE}
-(ptot_p1<-ggplot(plan_wide_19902020%>% 
-                   filter(ano_coleta>"1990" &
-                             ano_coleta<="2000"),
-                 aes(codigo,
-                     fosforo_total))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0.15,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0.1,
-             ymax=0.15,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=0.1,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Fósforo total no período 1990-2000",
-         x="Estação",
-         y="mg/L")+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                       n.breaks = 8,
-                       limits = c(min(plan_wide_19902020$fosforo_total, na.rm = TRUE),
-                                  max(plan_wide_19902020$fosforo_total), na.rm = TRUE),
-                       trans = "log10")+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+```{r Gráfico Fósforo total periodo1, echo = FALSE, warning = FALSE, message = FALSE}
+(ptot_p1 <- plan_wide_19902020%>% 
+   filter(ano_coleta>"1990" &
+            ano_coleta<="2000") %>% 
+   boxplot_ptot(
+     titulo = "Fósforo total no período 1990-2000",
+   )
 )
-
 ```
 
-```{r Gráfico Fósforo total periodo2, warning = FALSE, message = FALSE}
-(ptot_p2 <- ggplot(plan_wide_19902020%>% 
-                      filter(ano_coleta>"2000" &
-                                ano_coleta<="2010"),
-                   aes(codigo,
-                       fosforo_total))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0.15,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0.1,
-             ymax=0.15,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=0.1,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Fósforo total no período 2000-2010",
-         x="Estação",
-         y="mg/L")+
-   scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                      n.breaks = 8,
-                      limits = c(min(plan_wide_19902020$fosforo_total, na.rm = TRUE),
-                                 max(plan_wide_19902020$fosforo_total), na.rm = TRUE),
-                      trans = "log10")+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+```{r Gráfico Fósforo total periodo2, echo = FALSE, warning = FALSE, message = FALSE}
+(ptot_p2 <- plan_wide_19902020%>% 
+   filter(ano_coleta>"2000" &
+            ano_coleta<="2010") %>% 
+   boxplot_ptot(
+     titulo = "Fósforo total no período 2000-2010",
+   )
 )
-
 ```
 
-```{r Gráfico Fósforo total periodo3, warning = FALSE, message = FALSE}
-(ptot_p3 <- ggplot(plan_wide_19902020%>% 
-                      filter(ano_coleta>"2010" &
-                                ano_coleta<="2020"),
-                   aes(codigo,
-                       fosforo_total))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0.15,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0.1,
-             ymax=0.15,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=0.1,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Fósforo total no período 2010-2020",
-         x="Estação",
-         y="mg/L")+
-    scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
-                       n.breaks = 8,
-                       limits = c(min(plan_wide_19902020$fosforo_total, na.rm = TRUE),
-                                  max(plan_wide_19902020$fosforo_total), na.rm = TRUE),
-                       trans = "log10")+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+```{r Gráfico Fósforo total periodo3, echo = FALSE, warning = FALSE, message = FALSE}
+(ptot_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2010" &
+            ano_coleta<="2020") %>% 
+   boxplot_ptot(
+     titulo = "Fósforo total no período 2010-2020",
+   )
 )
-
 ```
 
 ```{r Sumário Fósforo total, warning=FALSE, message = FALSE,}
@@ -2393,6 +2111,16 @@ ggsave("ptot_p3.png",
 (ecoli <- boxplot_ecoli(
   titulo = "*Escherichia coli* no período 1990-2020"
 )+
+  scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
+                     # n.breaks = 9,
+                     n.breaks = 6,
+                     limits = c(min(plan_wide_19902020$escherichia_coli, na.rm = TRUE),
+                                max(plan_wide_19902020$escherichia_coli, na.rm = TRUE)),
+                     trans = "log10",
+                     # labels = scales::number_format(accuracy = 1,
+                     #                                decimal.mark = ",",
+                     #                                big.mark = " ")
+  )+
   facet_wrap(~periodo)
 )
 
@@ -2443,9 +2171,10 @@ ggsave("ptot_p3.png",
                       limits = c(min(plan_wide_19902020$escherichia_coli, na.rm = TRUE),
                                  max(plan_wide_19902020$escherichia_coli, na.rm = TRUE)),
                       trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
+                      # labels = scales::number_format(accuracy = 1,
+                      #                                decimal.mark = ",",
+                      #                                big.mark = " ")
+                      )+
    ggbeeswarm::geom_quasirandom(
      size = 1.2,
      alpha = .25,
@@ -2465,7 +2194,7 @@ ggsave("ptot_p3.png",
                aes(group=1),
                alpha=.5,
                na.rm = TRUE,
-               size = 1)+
+               linewidth = 1)+
    theme_grafs()+
     theme(
         axis.text.y = element_text(
@@ -2553,7 +2282,7 @@ ggsave("ptot_p3.png",
                 aes(group=1),
                 alpha=.5,
                 na.rm = TRUE,
-                size = 1)+
+                linewidth = 1)+
     theme_grafs()
 )
 ```
@@ -2629,7 +2358,7 @@ ggsave("ptot_p3.png",
                 aes(group=1),
                 alpha=.5,
                 na.rm = TRUE,
-                size = 1)+
+                linewidth = 1)+
     theme_grafs()
 )
 ```
@@ -2705,7 +2434,7 @@ ggsave("ptot_p3.png",
                 aes(group=1),
                 alpha=.5,
                 na.rm = TRUE,
-                size = 1)+
+                linewidth = 1)+
     theme_grafs()
 )
 ```
@@ -2932,7 +2661,7 @@ periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
     #   aes(group = 1),
     #   alpha =.5,
     #   na.rm = TRUE,
-    #   size = 0.3,
+    #   linewidth = 0.3,
     #   # fullrange = TRUE,
   #   # show.legend = TRUE
   # )+
@@ -2943,7 +2672,7 @@ periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
   #   # aes(group = 1),
   #   # alpha =.5,
   #   na.rm = TRUE,
-  #   # size = 0.3,
+  #   # linewidth = 0.3,
   #   fullrange = TRUE,
   #   show.legend = TRUE
   # )+
@@ -2956,214 +2685,33 @@ periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
 ```
 
 ```{r Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
-(namon_p1 <- ggplot(plan_wide_19902020 %>% 
-                      filter(ano_coleta>"1990" &
-                               ano_coleta<="2000"),
-                    aes(codigo,
-                        nitrogenio_amoniacal))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=13.3,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=3.7,
-             ymax=13.3,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=3.7,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-   labs(title = "Nitrogênio amoniacal no período 1990-2000",
-        x="Estação",
-        y="mg/L")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 9,
-                      limits = c(min(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE),
-                                 max(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = .001,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(namon_p1 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"1990" &
+            ano_coleta<="2000") %>% 
+   boxplot_namon(
+     titulo = "Nitrogênio Amoniacal no período 1990-2000"
+   )
+ )
 ```
 
 ```{r Gráfico Nitrogênio total periodo2, warning = FALSE, message = FALSE}
-(namon_p2 <- ggplot(plan_wide_19902020 %>% 
-                      filter(ano_coleta>"2000" &
-                               ano_coleta<="2010"),
-                    aes(codigo,
-                        nitrogenio_amoniacal))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=13.3,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=3.7,
-            ymax=13.3,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=3.7,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Nitrogênio amoniacal no período 2000-2010",
-        x="Estação",
-        y="mg/L")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 9,
-                      limits = c(min(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE),
-                                 max(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = .001,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(namon_p2 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2000" &
+            ano_coleta<="2010") %>% 
+   boxplot_namon(
+     titulo = "Nitrogênio Amoniacal no período 2000-2010"
+   )
+ )
 ```
 
 ```{r Gráfico Nitrogênio total periodo3, warning = FALSE, message = FALSE}
-(namon_p3 <- ggplot(plan_wide_19902020 %>% 
-                       filter(ano_coleta>"2010" &
-                                 ano_coleta<="2020"),
-                    aes(codigo,
-                        nitrogenio_amoniacal))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=13.3,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=3.7,
-            ymax=13.3,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=3.7,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Nitrogênio amoniacal no período 2010-2020",
-        x="Estação",
-        y="mg/L")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 9,
-                      limits = c(min(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE),
-                                 max(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = .001,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
-```
-
-```{r Gráfico Namon 3 periodos juntos, warning=FALSE, message=FALSE}
-grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3)
+(namon_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2010" &
+            ano_coleta<="2020") %>% 
+   boxplot_namon(
+     titulo = "Nitrogênio Amoniacal no período 2010-2020"
+   )
+ )
 ```
 
 ```{r Sumário Nitrogênio total, warning=FALSE, message = FALSE,}
@@ -3276,103 +2824,24 @@ ggsave("namon_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
-
-ggsave("namon_3periodos.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = grid.arrange(namon_p1, namon_p2, namon_p3, ncol = 3),
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
 ```
 
 ### Turbidez
 
 ```{r Gráfico Turbidez facetted, fig.cap="turbidez-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
-(turb <- ggplot(plan_wide_19902020,
-                   aes(codigo,
-                       turbidez))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=100,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=40,
-            ymax=100,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=40,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
+(turb <- plan_wide_19902020 %>% 
+   boxplot_turb(
+     titulo = "Turbidez no período 1990-2020"
    )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-   labs(title = "Turbidez no período 1990-2020",
-        x="Estação",
-        y="UNT")+
-   scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
-                      n.breaks = 8,
-                      limits = c(
-                        # 1,
-                        min(plan_wide_19902020$turbidez, na.rm = TRUE),
-                        # 500
-                        max(plan_wide_19902020$turbidez, na.rm = TRUE)
-                      ),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+   facet_wrap(~periodo)
+ )
 ```
 
 ```{r Gráfico Turbidez line, warning = FALSE, message = FALSE}
 (turb_line <- plan_wide_19902020 %>%
-  filter(ano_coleta > "1990" &
-           ano_coleta <= "2020") %>%
-  select(codigo, turbidez, data_coleta, periodo) %>%
+   filter(ano_coleta > "1990" &
+            ano_coleta <= "2020") %>%
+   select(codigo, turbidez, data_coleta, periodo) %>%
   group_by(codigo) %>%
   ggplot(
     aes(x = data_coleta,
@@ -3405,7 +2874,7 @@ ggsave("namon_3periodos.png",
   #   aes(group = 1),
   #   alpha =.5,
   #   na.rm = TRUE,
-  #   size = 0.3,
+  #   linewidth = 0.3,
   #   # fullrange = TRUE,
   #   # show.legend = TRUE
   # )+
@@ -3416,7 +2885,7 @@ ggsave("namon_3periodos.png",
   #   # aes(group = 1),
   #   # alpha =.5,
   #   na.rm = TRUE,
-  #   # size = 0.3,
+  #   # linewidth = 0.3,
   #   fullrange = TRUE,
   #   show.legend = TRUE
   # )+
@@ -3429,214 +2898,33 @@ ggsave("namon_3periodos.png",
 ```
 
 ```{r Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
-(turb_p1 <- ggplot(plan_wide_19902020 %>% 
-                     filter(ano_coleta>"1990" &
-                              ano_coleta<="2000"),
-                   aes(codigo,
-                       turbidez))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=100,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=40,
-            ymax=100,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=40,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Turbidez no período 1990-2000",
-        x="Estação",
-        y="UNT")+
-   scale_y_continuous(expand = expansion(mult = c(0.05, 0.03)),
-                      n.breaks = 8,
-                      limits = c(min(plan_wide_19902020$turbidez, na.rm = TRUE),
-                                 max(plan_wide_19902020$turbidez, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(turb_p1 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"1990" &
+            ano_coleta<="2000") %>% 
+   boxplot_turb(
+     titulo = "Turbidez no período 1990-2000"
+   )
+ )
 ```
 
 ```{r Gráfico Turbidez periodo2, warning = FALSE, message = FALSE}
-(turb_p2 <- ggplot(plan_wide_19902020 %>% 
-                     filter(ano_coleta>"2000" &
-                              ano_coleta<="2010"),
-                   aes(codigo,
-                       turbidez))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=100,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=40,
-            ymax=100,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=40,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Turbidez no período 2000-2010",
-        x="Estação",
-        y="UNT")+
-   scale_y_continuous(expand = expansion(mult = c(0.05, 0.03)),
-                      n.breaks = 8,
-                      limits = c(min(plan_wide_19902020$turbidez, na.rm = TRUE),
-                                 max(plan_wide_19902020$turbidez, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(turb_p2 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2000" &
+            ano_coleta<="2010") %>% 
+   boxplot_turb(
+     titulo = "Turbidez no período 2000-2010"
+   )
+ )
 ```
 
 ```{r Gráfico Turbidez periodo3, warning = FALSE, message = FALSE}
-(turb_p3 <- ggplot(plan_wide_19902020 %>% 
-                     filter(ano_coleta>"2010" &
-                              ano_coleta<="2020"),
-                   aes(codigo,
-                       turbidez))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=100,
-            ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=40,
-            ymax=100,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=0,
-            ymax=40,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Turbidez no período 2010-2020",
-        x="Estação",
-        y="UNT")+
-   scale_y_continuous(expand = expansion(mult = c(0.05, 0.03)),
-                      n.breaks = 8,
-                      limits = c(min(plan_wide_19902020$turbidez, na.rm = TRUE),
-                                 max(plan_wide_19902020$turbidez, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
-```
-
-```{r Gráfico turb 3 periodos juntos, warning=FALSE, message=FALSE}
-grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3)
+(turb_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2010" &
+            ano_coleta<="2020") %>% 
+   boxplot_turb(
+     titulo = "Turbidez no período 2010-2020"
+   )
+ )
 ```
 
 ```{r Sumário Turbidez, warning=FALSE, message = FALSE,}
@@ -3746,295 +3034,46 @@ ggsave("turb_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
-
-ggsave("turb_3periodos.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = grid.arrange(turb_p1, turb_p2, turb_p3, ncol = 3),
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
 ```
 
 ### pH
 
 ```{r Gráfico pH facetted, fig.cap="pH-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
-(pH <- ggplot(plan_wide_19902020,
-                 aes(codigo,
-                     pH))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=6,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=9,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=6,
-            ymax=9,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
-   )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-   labs(title = "pH no período 1990-2020",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      n.breaks = 8,
-                      limits = c(4,11),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+(pH <- boxplot_pH(
+  titulo = "pH no período 1990-2020"
+)+
+  facet_wrap(~periodo)
 )
 ```
 
 ```{r Gráfico pH periodo1, warning = FALSE, message = FALSE}
-(pH_p1 <- ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta>"1990" &
-                            ano_coleta<="2000"),
-                 aes(codigo,
-                     pH))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=6,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=9,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=6,
-            ymax=9,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "pH no período 1990-2000",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      n.breaks = 8,
-                      limits = c(4,11),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(pH_p1 <- plan_wide_19902020 %>% 
+   filter(ano_coleta > "1990" &
+            ano_coleta <= "2000") %>% 
+   boxplot_pH(
+     titulo = "pH no período 1990-2000"
+   )
+ )
 ```
 
 ```{r Gráfico pH periodo2, warning = FALSE, message = FALSE}
-(pH_p2 <- ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta>"2000" &
-                            ano_coleta<="2010"),
-                 aes(codigo,
-                     pH))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=6,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=9,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=6,
-            ymax=9,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "pH no período 2000-2010",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      n.breaks = 8,
-                      limits = c(4,11),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(pH_p2 <- plan_wide_19902020 %>% 
+   filter(ano_coleta > "2000" &
+            ano_coleta <= "2010") %>% 
+   boxplot_pH(
+     titulo = "pH no período 2000-2010"
+   )
+ )
 ```
 
 ```{r Gráfico pH periodo3, warning = FALSE, message = FALSE}
-(pH_p3 <- ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta>"2010" &
-                            ano_coleta<="2020"),
-                 aes(codigo,
-                     pH))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=6,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=9,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=6,
-            ymax=9,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "pH no período 2010-2020",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      n.breaks = 8,
-                      limits = c(4,11),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
-```
-
-```{r Gráfico pH 3 periodos juntos, warning=FALSE, message=FALSE}
-grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3)
+(pH_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta > "2010" &
+            ano_coleta <= "2020") %>% 
+   boxplot_pH(
+     titulo = "pH no período 2010-2020"
+   )
+ )
 ```
 
 ```{r Sumário pH, warning=FALSE, message = FALSE,}
@@ -4144,263 +3183,47 @@ ggsave("pH_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
-
-ggsave("pH_3periodos.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = grid.arrange(pH_p1, pH_p2, pH_p3, ncol = 3),
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
 ```
 
 ### Sólidos totais
 
 ```{r Gráfico SólTot facetted, fig.cap="sólidos-totais-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
-(SolTot <- ggplot(plan_wide_19902020,
-                  aes(codigo,
-                      solidos_totais))+
-   annotate("rect",
-            xmin = -Inf, xmax = Inf,
-            ymin = 500, ymax = Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
+(SolTot <- plan_wide_19902020 %>% 
+   boxplot_solidos_totais(
+     titulo = "Sólidos totais no período 1990-2020"
    )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-   labs(title = "Sólidos totais no período 1990-2020",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$solidos_totais, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+   facet_wrap(~periodo)
 )
 ```
 
 ```{r Gráfico SólTot periodo1, warning = FALSE, message = FALSE}
-(SolTot_p1 <- ggplot(plan_wide_19902020 %>% 
-                       filter(ano_coleta>"1990" &
-                                ano_coleta<="2000"),
-                     aes(codigo,
-                         solidos_totais))+
-   annotate("rect",
-            xmin = -Inf, xmax = Inf,
-            ymin = 500, ymax = Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Sólidos totais no período 1990-2000",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$solidos_totais, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-)
+(SolTot_p1 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"1990" &
+          ano_coleta<="2000") %>% 
+   boxplot_solidos_totais(
+     titulo = "Sólidos totais no período 1990-2000"
+   )
+ )
 ```
 
 ```{r Gráfico SólTot periodo2, warning = FALSE, message = FALSE}
-(SolTot_p2 <- ggplot(plan_wide_19902020 %>% 
-                       filter(ano_coleta>"2000" &
-                                ano_coleta<="2010"),
-                     aes(codigo,
-                         solidos_totais))+
-   annotate("rect",
-            xmin = -Inf, xmax = Inf,
-            ymin = 500, ymax = Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Sólidos totais no período 2000-2010",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$solidos_totais, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-    theme_grafs()
+(SolTot_p2 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2000" &
+            ano_coleta<="2010") %>% 
+   boxplot_solidos_totais(
+     titulo = "Sólidos totais no período 2000-2010"
+   )
 )
 ```
 
 ```{r Gráfico SólTot periodo3, warning = FALSE, message = FALSE}
-(SolTot_p3 <- ggplot(plan_wide_19902020 %>% 
-                        filter(ano_coleta>"2010" &
-                                  ano_coleta<="2020"),
-                     aes(codigo,
-                         solidos_totais))+
-    annotate("rect",
-            xmin = -Inf, xmax = Inf,
-            ymin = 500, ymax = Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=-Inf,
-             ymax=500,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Sólidos totais no período 2010-2020",
-         x="Estação",
-         y="")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$solidos_totais, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+(SolTot_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2010" &
+            ano_coleta<="2020") %>% 
+   boxplot_solidos_totais(
+     titulo = "Sólidos totais no período 2010-2020"
+   )
 )
-```
-
-```{r Gráfico SólTot 3 periodos juntos, warning=FALSE, message=FALSE}
-grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3)
 ```
 
 ```{r Sumário Sólidos Totais, warning=FALSE, message = FALSE,}
@@ -4510,983 +3333,47 @@ ggsave("SolTot_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
-
-ggsave("SolTot_3periodos.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = grid.arrange(SolTot_p1, SolTot_p2, SolTot_p3, ncol = 3),
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
 ```
 
-### IQA
-
-```{r Gráfico IQA facetted, fig.cap="iqa-gravataí no período 1990-2020", echo = FALSE, message=FALSE, warning=FALSE}
-(iqa <-ggplot(plan_wide_19902020,
-              aes(codigo,
-                  iqa, na.rm = TRUE))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=25,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=25,
-            ymax=50,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=50,
-            ymax=70,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=70,
-            ymax=90,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=90,
-            ymax=Inf,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
-   )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-   labs(title = "Variação do IQA no período 1990-2020",
-        x="Estação",
-        y="IQA")+
-   scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      n.breaks = 6,
-                      limits = c(-1,101))+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
-   # theme(axis.title.y = element_blank())
-)
-```
-
-```{r Gráfico IQA periodo1, echo = FALSE, message=FALSE, warning=FALSE}
-(iqa_p1 <-ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta > "1990" &
-                            ano_coleta <= "2000"),
-                 aes(codigo,
-                     iqa, na.rm = TRUE))+
-    annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=25,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=25,
-            ymax=50,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=50,
-            ymax=70,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=70,
-            ymax=90,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=90,
-            ymax=Inf,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65),
-                 na.rm = TRUE)+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7,
-                 na.rm = TRUE)+
-    labs(title = "Variação do IQA no período 1990-2000",
-         x="Estação",
-         y="")+
-    scale_y_continuous(expand = expansion(mult = c(0,0)),
-                       n.breaks = 6,
-                       limits = c(-1,101))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                size = 1)+
-   theme_grafs()+
-   theme(axis.title.y = element_blank())
-)
-```
-
-```{r Gráfico IQA periodo2, echo = FALSE, message=FALSE, warning=FALSE}
-(iqa_p2 <-ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta > "2000" &
-                            ano_coleta <= "2010"),
-                 aes(codigo,
-                     iqa, na.rm = TRUE))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=25,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=25,
-            ymax=50,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=50,
-            ymax=70,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=70,
-            ymax=90,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=90,
-            ymax=Inf,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65),
-                na.rm = TRUE)+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7,
-                na.rm = TRUE)+
-   labs(title = "Variação do IQA no período 2000-2010",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      n.breaks = 6,
-                      limits = c(-1,101))+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
- theme_grafs()+
-   theme(axis.title.y = element_blank()
-   )
-)
-```
-
-```{r Gráfico IQA periodo3, echo = FALSE, message=FALSE, warning=FALSE}
-(iqa_p3 <-ggplot(plan_wide_19902020 %>% 
-                   filter(ano_coleta > "2010" &
-                            ano_coleta <= "2020"),
-                 aes(codigo,
-                     iqa, na.rm = TRUE))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=25,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=25,
-            ymax=50,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=50,
-            ymax=70,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=70,
-            ymax=90,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=90,
-            ymax=Inf,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65),
-                na.rm = TRUE)+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7,
-                na.rm = TRUE)+
-   labs(title = "Variação do IQA no período 2010-2020",
-        x="Estação",
-        y="")+
-   scale_y_continuous(expand = expansion(mult = c(0,0)),
-                      n.breaks = 6,
-                      limits = c(-1,101))+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-    theme_grafs()+
-    theme(axis.title.y = element_blank())
-)
-```
-
-```{r Gráfico IQA 3 periodos juntos, warning=FALSE, message=FALSE}
-grid.arrange(iqa_p1, iqa_p2, iqa_p3, ncol = 3)
-```
-
-```{r Sumário IQA, warning=FALSE, message = FALSE,}
-(sum_IQA_p1 <- plan_wide_19902020 %>%
-   select(codigo, iqa, ano_coleta) %>% 
-   filter(ano_coleta>"1990" &
-            ano_coleta<="2000") %>% 
-   group_by(codigo) %>% 
-   summarize(
-     min = 
-       min(iqa, 
-           na.rm = TRUE),
-     q1 = 
-       quantile(iqa, 0.25, 
-                na.rm = TRUE),
-     median = 
-       median(iqa, 
-              na.rm = TRUE),
-     mean = 
-       mean(iqa, 
-            na.rm= TRUE),
-     q3 = 
-       quantile(iqa, 0.75, 
-                na.rm = TRUE),
-     max = 
-       max(iqa, 
-           na.rm = TRUE),
-     n = 
-        length(iqa)
-   )
-)
-
-(sum_IQA_p2 <- plan_wide_19902020 %>%
-    select(codigo, iqa, ano_coleta) %>% 
-    filter(ano_coleta>"2000" &
-             ano_coleta<="2010") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(iqa, 
-            na.rm = TRUE),
-      q1 = 
-        quantile(iqa, 0.25, 
-                 na.rm = TRUE),
-      median = 
-        median(iqa, 
-               na.rm = TRUE),
-      mean = 
-        mean(iqa, 
-             na.rm= TRUE),
-      q3 = 
-        quantile(iqa, 0.75, 
-                 na.rm = TRUE),
-      max = 
-        max(iqa, 
-            na.rm = TRUE),
-      n = 
-        length(iqa)
-      )
-)
-
-(sum_IQA_p3 <- plan_wide_19902020 %>%
-    select(codigo, iqa, ano_coleta) %>% 
-    filter(ano_coleta>"2010" &
-             ano_coleta<="2020") %>%
-    # ?as_factor(codigo) %>% 
-    group_by(codigo) %>%
-    summarize(
-      min = 
-        min(iqa, 
-            na.rm = TRUE),
-      q1 = 
-        quantile(iqa, 0.25, 
-                 na.rm = TRUE),
-      median = 
-        median(iqa, 
-               na.rm = TRUE),
-      mean = 
-        mean(iqa, 
-             na.rm= TRUE),
-      q3 = 
-        quantile(iqa, 0.75, 
-                 na.rm = TRUE),
-      max = 
-        max(iqa, 
-            na.rm = TRUE),
-      n = 
-        length(iqa),
-      NAs = 
-        sum(is.na(iqa))
-      ) %>% 
-  mutate(
-    "%NA" = NAs/n*100
-  )
-)
-
-```
-
-```{r Salvando iqa, warning=FALSE, message = FALSE,}
-ggsave("iqa.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = iqa,
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
-
-ggsave("iqa_p1.png",
-       plot = iqa_p1,
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
-
-ggsave("iqa_p2.png",
-       plot = iqa_p2,
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
-
-ggsave("iqa_p3.png",
-       plot = iqa_p3,
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
-
-ggsave("iqa_3periodos.png",
-       units = c("px"),
-       width = 4500,
-       height = 2993,
-       plot = grid.arrange(iqa_p1, iqa_p2, iqa_p3, ncol = 3),
-       path = "./graficos",
-       dpi = 300,
-       type = "cairo")
-```
-
-## Testando coisas
-
-```{r Testando coisas, include = FALSE, warning=FALSE, message = FALSE,}
-# plan_wide_19902020 %>% 
-#    select(codigo, oxigenio_dissolvido, ano_coleta) %>% 
-#    ggplot(aes(ano_coleta, oxigenio_dissolvido, 
-#       col = codigo))+
-#    geom_line()+
-#    facet_wrap(~ codigo, ncol = 7)
-
-# df111 <- data.frame(x = c(1:100))
-# glimpse(df111)
-# df111$y <- 2 + 3 * df111$x + rnorm(100, sd = 40)
-# 
-# lm_eqn <- function(df111){
-#     m <- lm(y ~ x, df111);
-#     eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
-#          list(a = format(unname(coef(m)[1]), digits = 2),
-#               b = format(unname(coef(m)[2]), digits = 2),
-#              r2 = format(summary(m)$r.squared, digits = 3)))
-#     as.character(as.expression(eq));
-# } 
-# p2 <- p111 +
-#   geom_text(x = 25, y = 300,
-#             label = lm_eqn(df111),
-#             parse = TRUE)
-# p2
-# 
-# 
-# lm_eqc <- function(plan_wide_19902020){
-#    m <- lm(oxigenio_dissolvido ~ codigo, plan_wide_19902020);
-#    eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
-#                     list(a = format(unname(coef(m)[1]), digits = 2),
-#                          b = format(unname(coef(m)[2]), digits = 2),
-#                          r2 = format(summary(m)$r.squared, digits = 3)))
-#    as.character(as.expression(eq));
-# }
-# 
-# (od_p1 <-ggplot(plan_wide_19902020 %>%
-#                    filter(ano_coleta>"1990" &
-#                              ano_coleta<="2000"),
-#                 aes(codigo,
-#                     oxigenio_dissolvido))+
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=-Inf,
-#                ymax=2,
-#                alpha=1,
-#                fill="#ac5079")+ #>pior classe
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=2,
-#                ymax=4,
-#                alpha=1,
-#                fill="#eb5661")+ #classe 4
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=4,
-#                ymax=5,
-#                alpha=1,
-#                fill="#fcf7ab")+ #classe 3
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=5,
-#                ymax=6,
-#                alpha=1,
-#                fill="#70c18c")+ #classe 2
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=6,
-#                ymax=Inf,
-#                alpha=1,
-#                fill="#8dcdeb")+ #classe 1
-#       stat_boxplot(geom = 'errorbar',
-#                    width=0.3,
-#                    position = position_dodge(width = 0.65))+
-#       geom_boxplot(fill='#F8F8FF',
-#                    color="black",
-#                    outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-#                    width= 0.7)+
-#       labs(title = "Oxigênio Dissolvido no período 1990-2000",
-#            x="Estação",
-#            y="mg/L")+
-#       # geom_jitter(width = .05,
-#       #             alpha=.2,
-#       #             size=1.5,
-#       #             color="black")+
-#       scale_y_continuous(expand = expansion(mult = c(0,0)),
-#                          n.breaks = 11,
-#                          limits = c(-1,21))+
-#       scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
-#       geom_smooth(method = "lm",
-#                   se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-#                   aes(group=1),
-#                   alpha=.5,
-#                   na.rm = TRUE,
-#                   size = 1)+
-#       # annotate(geom_text(aes(x = "87405500", y = 15),
-#       #                    label = lm_eqc(plan_wide_19902020),
-#       #                    parse = TRUE,
-#       #                    inherit.aes = TRUE,
-#       #                    check_overlap = TRUE))+
-#       #  geom_line(
-#       #     aes(color="red"),
-#       #     alpha=.0,
-#       # )+
-#       # scale_color_manual("Legenda",
-#       #                    guide="legend",
-#       #                    values = c("Classe 1"="#8dcdeb",
-#       #                               "Classe 2"="#70c18c",
-#       #                               "Classe 3"="#fcf7ab",
-#       #                               "Classe 4"="#eb5661",
-#       #                               "Pior Classe"="#ac5079"))+
-#    # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
-#    #                                               lwd=c(2,2,2,2,2),
-#    #                                               shape=c(NA,NA,NA,NA,NA),
-#    #                                               alpha=1)))+
-#       theme(legend.position = "bottom")+
-#       theme_classic())
-
-# list1111 <- sessionInfo()
-# list1111$loadedOnly
-
-# install.packages("ggpmisc")
-# library(ggpmisc)
-
-# summary(lm(plan_wide_19902020$codigo~plan_wide_19902020$dbo))
-# 
-# 
-# p <- ggplot(data, aes(y=number, x=pod)) +
-#   geom_boxplot()
-# print(p)
-
-# install.packages("GGally")
-
-
-# fit = lm(plan_wide_19902020$oxigenio_dissolvido~ plan_wide_19902020$codigo)
-# summary(fit)
-# summary.lm(fit)
-# 
-# pacman::p_load(esquisse)
-
-# sumario <- function(x, y){
-#   x %>% 
-#     group_by(codigo) %>%
-#     summarise(
-#       list(min= ~min(y, na.rm = TRUE), 
-#            Q1= ~quantile(y, probs = 0.25),
-#            median= ~median(y, na.rm = TRUE), 
-#            Q3= ~quantile(y, probs = 0.75),
-#            max= ~max(y, na.rm = TRUE)),
-#       .groups = "drop"
-#       )
-# }
-```
-
-### Correlação
-
-```{r Correlação, fig.cap="correlação-parametros-qualidade-agua-gravataí no período 1990-2020", time_it = TRUE, warning=FALSE, message = FALSE,}
-parametros_IQA %>% 
-  dplyr::select(
-    -codigo,
-    -ano_coleta,
-    -nitrogenio_total
-    ) %>% 
-  # group_by(codigo) %>% 
-  rename(
-    
-    CE = condutividade,
-    E_coli = escherichia_coli,
-    OD = oxigenio_dissolvido,
-    ST = solidos_totais,
-    Turb = turbidez,
-    Temp = temperatura_agua,
-    Ptot = fosforo_total,
-    # NTot = nitrogenio_total,
-    NAmon = nitrogenio_amoniacal,
-    NTK = nitrogenio_kjeldahl
-  ) %>% 
-  ggcorr(
-    method = "complete.obs",
-    # "pearson",
-    # "pairwise",
-    name = "Correlação",
-    label = TRUE,
-    label_alpha = TRUE,
-    digits = 3,
-    low = "#3B9AB2",
-    mid = "#EEEEEE",
-    high = "#F21A00",
-    # palette = "RdYlBu",
-    layout.exp = 0,
-    legend.position = "left",
-    label_round = 3,
-    # legend.size = 18,
-    geom = "tile",
-    nbreaks = 10,
-  )+
-  labs(title = "Correlação entre parâmetros físico-químicos na\nBacia Hidrográfica do rio Gravataí no período 1990-2020")+
-  theme_linedraw()+
-  theme(
-    legend.position = c(0.15, 0.6),
-    legend.title = element_text(size = 16),
-    legend.text = element_text(size = 14),
-    # legend.spacing = unit(element_text(),
-                          # units = 5)
-    plot.title = element_text(hjust = 0.5,
-                              size = 16)
-  )
-
-# Gráfico das correlações entre todos os parâmetros com significância
-correl_IQA <- parametros_IQA %>%
-  dplyr::select(-codigo) %>%
-  ggpairs(title = "Correlação entre parâmetros que compõem o IQA",
-          axisLabels = "show")
-
-correlacao_pIQA <- parametros_IQA %>% 
-  group_by(codigo) %>% 
-  correlation::correlation()
-
-correlacao_pIQA %>% 
-  # glimpse()
-  filter(
-    p < 0.001
-  ) %>% 
-  t() %>% 
-  summary()
-
-parametros_IQA %>% 
-  # group_by(codigo) %>% 
-  dplyr::select(
-    nitrogenio_kjeldahl, condutividade
-  ) %>% 
-  # correlation::cor_test() %>% 
-  plot()
-
-```
-
-### Condutividade elétrica
+## Condutividade elétrica
 
 ```{r Gráfico cond_elet facetted, fig.cap="condutividade-eletrica-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
-(cond_elet <- ggplot(plan_wide_19902020,
-                        aes(codigo,
-                            condutividade))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=500,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
+(cond_elet <- plan_wide_19902020 %>% 
+   boxplot_cond_elet(
+     titulo = "Condutividade elétrica no período 1990-2020"
    )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-      labs(title = "Condutividade elétrica no período 1990-2020",
-        x="Estação",
-        y="µmhos/cm")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$condutividade, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+   facet_wrap(~periodo)
 )
 ```
 
 ```{r Gráfico cond_elet periodo1, warning = FALSE, message = FALSE}
-(cond_elet_p1 <- ggplot(plan_wide_19902020 %>% 
-                          filter(ano_coleta>"2000" &
-                                   ano_coleta<="2010"),
-                        aes(codigo,
-                            condutividade))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=500,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-      labs(title = "Condutividade elétrica no período 1990-2000",
-        x="Estação",
-        y="µmhos/cm")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$condutividade, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+(cond_elet_p1 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"1990" &
+            ano_coleta<="2000") %>% 
+   boxplot_cond_elet(
+     titulo = "Condutividade elétrica no período 1990-2000"
+   )
 )
 ```
 
 ```{r Gráfico cond_elet periodo2, warning = FALSE, message = FALSE}
-(cond_elet_p2 <- ggplot(plan_wide_19902020 %>% 
-                          filter(ano_coleta>"2000" &
-                                   ano_coleta<="2010"),
-                        aes(codigo,
-                            condutividade))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=500,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Condutividade elétrica no período 2000-2010",
-        x="Estação",
-        y="µmhos/cm")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$condutividade, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+(cond_elet_p2 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2000" &
+            ano_coleta<="2010") %>% 
+   boxplot_cond_elet(
+     titulo = "Condutividade elétrica no período 2000-2010"
+   )
 )
 ```
 
 ```{r Gráfico cond_elet periodo3, warning = FALSE, message = FALSE}
-(cond_elet_p3 <- ggplot(plan_wide_19902020 %>% 
-                          filter(ano_coleta>"2010" &
-                                   ano_coleta<="2020"),
-                        aes(codigo,
-                            condutividade))+
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=500,
-            ymax=Inf,
-            alpha=1,
-            fill="#eb5661")+ #classe 4
-   annotate("rect",
-            xmin=-Inf,
-            xmax=Inf,
-            ymin=-Inf,
-            ymax=500,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_boxplot(geom = 'errorbar',
-                width=0.3,
-                position = position_dodge(width = 0.65))+
-   geom_boxplot(fill='#F8F8FF',
-                color="black",
-                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                width= 0.7)+
-   labs(title = "Condutividade elétrica no período 2010-2020",
-        x="Estação",
-        y="µmhos/cm")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                      n.breaks = 8,
-                      limits = c(0,
-                                 max(plan_wide_19902020$condutividade, na.rm = TRUE)),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()
+(cond_elet_p3 <- plan_wide_19902020 %>% 
+   filter(ano_coleta>"2010" &
+            ano_coleta<="2020") %>% 
+   boxplot_cond_elet(
+     titulo = "Condutividade elétrica no período 2010-2020"
+   )
 )
-```
-
-```{r Gráfico cond_elet 3 periodos juntos, warning=FALSE, message=FALSE}
-grid.arrange(cond_elet_p1, cond_elet_p2, cond_elet_p3, ncol = 3)
 ```
 
 ```{r Sumário cond_elet, warning=FALSE, message = FALSE}
@@ -5621,19 +3508,709 @@ ggsave("cond_elet_p3.png",
        path = "./graficos",
        dpi = 300,
        type = "cairo")
+```
 
-ggsave("cond_elet_3periodos.png",
+### IQA
+
+```{r Gráfico IQA facetted, fig.cap="iqa-gravataí no período 1990-2020", echo = FALSE, message=FALSE, warning=FALSE}
+(iqa <-ggplot(plan_wide_19902020,
+              aes(codigo,
+                  iqa, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=25,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=25,
+            ymax=50,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=50,
+            ymax=70,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=70,
+            ymax=90,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=90,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_summary(
+     fun.data = f,
+     geom = 'errorbar',
+     width = 0.3,
+     position = position_dodge(width = 0.65),
+   )+
+   stat_summary(
+     fun.data = f,
+     geom = "boxplot",
+     width = 0.7,
+     fill = '#F8F8FF',
+     color = "black",
+     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+   )+
+   facet_wrap(~periodo)+
+   labs(title = "Variação do IQA no período 1990-2020",
+        x="Estação",
+        y="IQA")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 6,
+                      limits = c(-1,101))+
+   ggbeeswarm::geom_quasirandom(
+     size = 1.2,
+     alpha = .25,
+     width = .07,
+   )+
+   scale_x_discrete(limits = c("87398500", 
+                               "87398980", 
+                               "87398900", 
+                               "87398950", 
+                               "87405500", 
+                               "87406900", 
+                               "87409900"),
+                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+   )+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               linewidth = 1)+
+   theme_grafs()
+   # theme(axis.title.y = element_blank())
+)
+```
+
+```{r Gráfico IQA periodo1, echo = FALSE, message=FALSE, warning=FALSE}
+(iqa_p1 <-ggplot(plan_wide_19902020 %>% 
+                   filter(ano_coleta > "1990" &
+                            ano_coleta <= "2000"),
+                 aes(codigo,
+                     iqa, na.rm = TRUE))+
+    annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=25,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=25,
+            ymax=50,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=50,
+            ymax=70,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=70,
+            ymax=90,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=90,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+    stat_boxplot(geom = 'errorbar',
+                 width=0.3,
+                 position = position_dodge(width = 0.65),
+                 na.rm = TRUE)+
+    geom_boxplot(fill='#F8F8FF',
+                 color="black",
+                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+                 width= 0.7,
+                 na.rm = TRUE)+
+    labs(title = "Variação do IQA no período 1990-2000",
+         x="Estação",
+         y="")+
+    scale_y_continuous(expand = expansion(mult = c(0,0)),
+                       n.breaks = 6,
+                       limits = c(-1,101))+
+    ggbeeswarm::geom_quasirandom(
+     size = 1.2,
+     alpha = .25,
+     width = .07,
+   )+
+   scale_x_discrete(limits = c("87398500", 
+                               "87398980", 
+                               "87398900", 
+                               "87398950", 
+                               "87405500", 
+                               "87406900", 
+                               "87409900"),
+                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+   )+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                linewidth = 1)+
+   theme_grafs()+
+   theme(axis.title.y = element_blank())
+)
+```
+
+```{r Gráfico IQA periodo2, echo = FALSE, message=FALSE, warning=FALSE}
+(iqa_p2 <-ggplot(plan_wide_19902020 %>% 
+                   filter(ano_coleta > "2000" &
+                            ano_coleta <= "2010"),
+                 aes(codigo,
+                     iqa, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=25,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=25,
+            ymax=50,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=50,
+            ymax=70,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=70,
+            ymax=90,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=90,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7,
+                na.rm = TRUE)+
+   labs(title = "Variação do IQA no período 2000-2010",
+        x="Estação",
+        y="")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 6,
+                      limits = c(-1,101))+
+   ggbeeswarm::geom_quasirandom(
+     size = 1.2,
+     alpha = .25,
+     width = .07,
+   )+
+   scale_x_discrete(limits = c("87398500", 
+                               "87398980", 
+                               "87398900", 
+                               "87398950", 
+                               "87405500", 
+                               "87406900", 
+                               "87409900"),
+                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+   )+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               linewidth = 1)+
+ theme_grafs()+
+   theme(axis.title.y = element_blank()
+   )
+)
+```
+
+```{r Gráfico IQA periodo3, echo = FALSE, message=FALSE, warning=FALSE}
+(iqa_p3 <-ggplot(plan_wide_19902020 %>% 
+                   filter(ano_coleta > "2010" &
+                            ano_coleta <= "2020"),
+                 aes(codigo,
+                     iqa, na.rm = TRUE))+
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=-Inf,
+            ymax=25,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=25,
+            ymax=50,
+            alpha=1,
+            fill="#eb5661")+ #classe 4
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=50,
+            ymax=70,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=70,
+            ymax=90,
+            alpha=1,
+            fill="#70c18c")+ #classe 2
+   annotate("rect",
+            xmin=-Inf,
+            xmax=Inf,
+            ymin=90,
+            ymax=Inf,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+   stat_boxplot(geom = 'errorbar',
+                width=0.3,
+                position = position_dodge(width = 0.65),
+                na.rm = TRUE)+
+   geom_boxplot(fill='#F8F8FF',
+                color="black",
+                outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+                width= 0.7,
+                na.rm = TRUE)+
+   labs(title = "Variação do IQA no período 2010-2020",
+        x="Estação",
+        y="")+
+   scale_y_continuous(expand = expansion(mult = c(0,0)),
+                      n.breaks = 6,
+                      limits = c(-1,101))+
+   ggbeeswarm::geom_quasirandom(
+     size = 1.2,
+     alpha = .25,
+     width = .07,
+   )+
+   scale_x_discrete(limits = c("87398500", 
+                               "87398980", 
+                               "87398900", 
+                               "87398950", 
+                               "87405500", 
+                               "87406900", 
+                               "87409900"),
+                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+   )+
+   geom_smooth(method = "lm",
+               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+               aes(group=1),
+               alpha=.5,
+               na.rm = TRUE,
+               linewidth = 1)+
+    theme_grafs()+
+    theme(axis.title.y = element_blank())
+)
+```
+
+```{r Sumário IQA, warning=FALSE, message = FALSE,}
+(sum_IQA_p1 <- plan_wide_19902020 %>%
+   select(codigo, iqa, ano_coleta) %>% 
+   filter(ano_coleta>"1990" &
+            ano_coleta<="2000") %>% 
+   group_by(codigo) %>% 
+   summarize(
+     min = 
+       min(iqa, 
+           na.rm = TRUE),
+     q1 = 
+       quantile(iqa, 0.25, 
+                na.rm = TRUE),
+     median = 
+       median(iqa, 
+              na.rm = TRUE),
+     mean = 
+       mean(iqa, 
+            na.rm= TRUE),
+     q3 = 
+       quantile(iqa, 0.75, 
+                na.rm = TRUE),
+     max = 
+       max(iqa, 
+           na.rm = TRUE),
+     n = 
+        length(iqa)
+   )
+)
+
+(sum_IQA_p2 <- plan_wide_19902020 %>%
+    select(codigo, iqa, ano_coleta) %>% 
+    filter(ano_coleta>"2000" &
+             ano_coleta<="2010") %>% 
+    group_by(codigo) %>% 
+    summarize(
+      min = 
+        min(iqa, 
+            na.rm = TRUE),
+      q1 = 
+        quantile(iqa, 0.25, 
+                 na.rm = TRUE),
+      median = 
+        median(iqa, 
+               na.rm = TRUE),
+      mean = 
+        mean(iqa, 
+             na.rm= TRUE),
+      q3 = 
+        quantile(iqa, 0.75, 
+                 na.rm = TRUE),
+      max = 
+        max(iqa, 
+            na.rm = TRUE),
+      n = 
+        length(iqa)
+      )
+)
+
+(sum_IQA_p3 <- plan_wide_19902020 %>%
+    select(codigo, iqa, ano_coleta) %>% 
+    filter(ano_coleta>"2010" &
+             ano_coleta<="2020") %>%
+    # ?as_factor(codigo) %>% 
+    group_by(codigo) %>%
+    summarize(
+      min = 
+        min(iqa, 
+            na.rm = TRUE),
+      q1 = 
+        quantile(iqa, 0.25, 
+                 na.rm = TRUE),
+      median = 
+        median(iqa, 
+               na.rm = TRUE),
+      mean = 
+        mean(iqa, 
+             na.rm= TRUE),
+      q3 = 
+        quantile(iqa, 0.75, 
+                 na.rm = TRUE),
+      max = 
+        max(iqa, 
+            na.rm = TRUE),
+      n = 
+        length(iqa),
+      NAs = 
+        sum(is.na(iqa))
+      ) %>% 
+  mutate(
+    "%NA" = NAs/n*100
+  )
+)
+
+```
+
+```{r Salvando iqa, warning=FALSE, message = FALSE,}
+ggsave("iqa.png",
        units = c("px"),
        width = 4500,
        height = 2993,
-       plot = grid.arrange(cond_elet_p1, cond_elet_p2, cond_elet_p3, ncol = 3),
+       plot = iqa,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
 
+ggsave("iqa_p1.png",
+       plot = iqa_p1,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("iqa_p2.png",
+       plot = iqa_p2,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("iqa_p3.png",
+       plot = iqa_p3,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
 ```
 
-## Textando o texto
+## Testando coisas
+
+```{r Testando coisas, include = FALSE, warning=FALSE, message = FALSE,}
+# plan_wide_19902020 %>% 
+#    select(codigo, oxigenio_dissolvido, ano_coleta) %>% 
+#    ggplot(aes(ano_coleta, oxigenio_dissolvido, 
+#       col = codigo))+
+#    geom_line()+
+#    facet_wrap(~ codigo, ncol = 7)
+
+# df111 <- data.frame(x = c(1:100))
+# glimpse(df111)
+# df111$y <- 2 + 3 * df111$x + rnorm(100, sd = 40)
+# 
+# lm_eqn <- function(df111){
+#     m <- lm(y ~ x, df111);
+#     eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
+#          list(a = format(unname(coef(m)[1]), digits = 2),
+#               b = format(unname(coef(m)[2]), digits = 2),
+#              r2 = format(summary(m)$r.squared, digits = 3)))
+#     as.character(as.expression(eq));
+# } 
+# p2 <- p111 +
+#   geom_text(x = 25, y = 300,
+#             label = lm_eqn(df111),
+#             parse = TRUE)
+# p2
+# 
+# 
+# lm_eqc <- function(plan_wide_19902020){
+#    m <- lm(oxigenio_dissolvido ~ codigo, plan_wide_19902020);
+#    eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
+#                     list(a = format(unname(coef(m)[1]), digits = 2),
+#                          b = format(unname(coef(m)[2]), digits = 2),
+#                          r2 = format(summary(m)$r.squared, digits = 3)))
+#    as.character(as.expression(eq));
+# }
+# 
+# (od_p1 <-ggplot(plan_wide_19902020 %>%
+#                    filter(ano_coleta>"1990" &
+#                              ano_coleta<="2000"),
+#                 aes(codigo,
+#                     oxigenio_dissolvido))+
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=-Inf,
+#                ymax=2,
+#                alpha=1,
+#                fill="#ac5079")+ #>pior classe
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=2,
+#                ymax=4,
+#                alpha=1,
+#                fill="#eb5661")+ #classe 4
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=4,
+#                ymax=5,
+#                alpha=1,
+#                fill="#fcf7ab")+ #classe 3
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=5,
+#                ymax=6,
+#                alpha=1,
+#                fill="#70c18c")+ #classe 2
+#       annotate("rect",
+#                xmin=-Inf,
+#                xmax=Inf,
+#                ymin=6,
+#                ymax=Inf,
+#                alpha=1,
+#                fill="#8dcdeb")+ #classe 1
+#       stat_boxplot(geom = 'errorbar',
+#                    width=0.3,
+#                    position = position_dodge(width = 0.65))+
+#       geom_boxplot(fill='#F8F8FF',
+#                    color="black",
+#                    outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+#                    width= 0.7)+
+#       labs(title = "Oxigênio Dissolvido no período 1990-2000",
+#            x="Estação",
+#            y="mg/L")+
+#       # geom_jitter(width = .05,
+#       #             alpha=.2,
+#       #             size=1.5,
+#       #             color="black")+
+#       scale_y_continuous(expand = expansion(mult = c(0,0)),
+#                          n.breaks = 11,
+#                          limits = c(-1,21))+
+#       scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
+#       geom_smooth(method = "lm",
+#                   se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+#                   aes(group=1),
+#                   alpha=.5,
+#                   na.rm = TRUE,
+#                   linewidth = 1)+
+#       # annotate(geom_text(aes(x = "87405500", y = 15),
+#       #                    label = lm_eqc(plan_wide_19902020),
+#       #                    parse = TRUE,
+#       #                    inherit.aes = TRUE,
+#       #                    check_overlap = TRUE))+
+#       #  geom_line(
+#       #     aes(color="red"),
+#       #     alpha=.0,
+#       # )+
+#       # scale_color_manual("Legenda",
+#       #                    guide="legend",
+#       #                    values = c("Classe 1"="#8dcdeb",
+#       #                               "Classe 2"="#70c18c",
+#       #                               "Classe 3"="#fcf7ab",
+#       #                               "Classe 4"="#eb5661",
+#       #                               "Pior Classe"="#ac5079"))+
+#    # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
+#    #                                               lwd=c(2,2,2,2,2),
+#    #                                               shape=c(NA,NA,NA,NA,NA),
+#    #                                               alpha=1)))+
+#       theme(legend.position = "bottom")+
+#       theme_classic())
+
+# list1111 <- sessionInfo()
+# list1111$loadedOnly
+
+# install.packages("ggpmisc")
+# library(ggpmisc)
+
+# summary(lm(plan_wide_19902020$codigo~plan_wide_19902020$dbo))
+# 
+# 
+# p <- ggplot(data, aes(y=number, x=pod)) +
+#   geom_boxplot()
+# print(p)
+
+# install.packages("GGally")
+
+
+# fit = lm(plan_wide_19902020$oxigenio_dissolvido~ plan_wide_19902020$codigo)
+# summary(fit)
+# summary.lm(fit)
+# 
+# pacman::p_load(esquisse)
+
+# sumario <- function(x, y){
+#   x %>% 
+#     group_by(codigo) %>%
+#     summarise(
+#       list(min= ~min(y, na.rm = TRUE), 
+#            Q1= ~quantile(y, probs = 0.25),
+#            median= ~median(y, na.rm = TRUE), 
+#            Q3= ~quantile(y, probs = 0.75),
+#            max= ~max(y, na.rm = TRUE)),
+#       .groups = "drop"
+#       )
+# }
+```
+
+## Correlação
+
+```{r Correlação, fig.cap="correlação-parametros-qualidade-agua-gravataí no período 1990-2020", time_it = TRUE, warning=FALSE, message = FALSE,}
+parametros_IQA %>% 
+  dplyr::select(
+    -codigo,
+    -ano_coleta,
+    -nitrogenio_total
+    ) %>% 
+  # group_by(codigo) %>% 
+  rename(
+    CE = condutividade,
+    E_coli = escherichia_coli,
+    OD = oxigenio_dissolvido,
+    ST = solidos_totais,
+    Turb = turbidez,
+    Temp = temperatura_agua,
+    Ptot = fosforo_total,
+    # NTot = nitrogenio_total,
+    NAmon = nitrogenio_amoniacal,
+    NTK = nitrogenio_kjeldahl
+  ) %>% 
+  ggcorr(
+    method = "complete.obs",
+    # "pearson",
+    # "pairwise",
+    name = "Correlação",
+    label = TRUE,
+    label_alpha = TRUE,
+    digits = 3,
+    low = "#3B9AB2",
+    mid = "#EEEEEE",
+    high = "#F21A00",
+    # palette = "RdYlBu",
+    layout.exp = 0,
+    legend.position = "left",
+    label_round = 3,
+    # legend.size = 18,
+    geom = "tile",
+    nbreaks = 10,
+  )+
+  labs(title = "Correlação entre parâmetros físico-químicos na\nBacia Hidrográfica do rio Gravataí no período 1990-2020")+
+  theme_linedraw()+
+  theme(
+    legend.position = c(0.15, 0.6),
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14),
+    # legend.spacing = unit(element_text(),
+                          # units = 5)
+    plot.title = element_text(hjust = 0.5,
+                              size = 16)
+  )
+
+# Gráfico das correlações entre todos os parâmetros com significância
+correl_IQA <- parametros_IQA %>%
+  dplyr::select(-codigo) %>%
+  ggpairs(title = "Correlação entre parâmetros que compõem o IQA",
+          axisLabels = "show")
+
+correlacao_pIQA <- parametros_IQA %>% 
+  group_by(codigo) %>% 
+  correlation::correlation()
+
+correlacao_pIQA %>% 
+  # glimpse()
+  filter(
+    p < 0.001
+  ) %>% 
+  as_tibble() %>% 
+  # filter(
+  #   Parameter1 == "oxigenio_dissolvido"
+  # ) %>% 
+  arrange(desc(r)) 
+  
+parametros_IQA %>% 
+  # group_by(codigo) %>% 
+  dplyr::select(
+    nitrogenio_kjeldahl, condutividade
+  ) %>% 
+  # correlation::cor_test() %>% 
+  plot()
+```
+
+# Textando o texto
 
 -   § falar do comportamento geral dos dados
 -   2º § - xº § -\> abordar os principais parâmetros que estão sendo impactados, detalhando, nas estações mais relevantes, como ficaram os quartis/mediana etc.
@@ -5642,8 +4219,8 @@ ggsave("cond_elet_3periodos.png",
 
 Os resultados apontam que para o parâmetro OD
 
+# Gráficos exemplos boxplot
 
-## Gráficos exemplos boxplot
 ```{r elementos do boxplot}
 set.seed(2023)
 exemplo_boxplot_df <- data.frame(
@@ -5896,7 +4473,6 @@ ggsave(
   # type = "cairo"
 )
 ```
-
 
 ```{r criando exemplo tipos boxplot tukey x garrett}
 set.seed(2021)
