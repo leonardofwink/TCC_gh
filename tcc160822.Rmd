@@ -3,20 +3,22 @@ title: "TCC"
 author: "Leonardo Fernandes Wink"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
-  html_document: 
-    distill::distill_article:
+  bookdown::html_document2:
+    theme: flatly
     highlight: haddock
     keep_md: yes
     number_sections: yes
-    theme: flatly
     toc: yes
     toc_float:
       collapsed: no
       smooth_scroll: no
+    fig_caption: yes
     fig_width: 10
     fig_height: 6.66
-    fig_caption: yes
     code_download: true
+    code_folding: show
+    widescreen: yes
+    df_print: 'kable'
   pdf_document:
     toc: yes
   word_document: 
@@ -53,7 +55,6 @@ Some features that I want to add:
 
 -   If the parameter is x, then use x's classes (with its own classes background color plotted)
 
-
 # Anotações de coisas por fazer:
 
 -   Descobrir como colocar as estações no sentido correto montante -\> jusante nos sumários
@@ -76,22 +77,40 @@ Some features that I want to add:
 |:---------:|:---------:|:---------:|
 | 1990-2000 | 2000-2010 | 2010-2020 |
 
-# Instalar os pacotes
-
-```{r instalar pacotes, eval=FALSE}
-# install.packages(tidyverse)
-```
+# Pacotes necessários
 
 ## acessar os pacotes
 
+```{r setup1, echo = FALSE}
+R_LIBS_SITE="E:\\Documents\\R\\R-4.2.2\\library"
+```
+
 ```{r Acessar os pacotes, message = FALSE, warning = TRUE}
-pacman::p_load(readr, rmarkdown, readxl, janitor,
-               pillar, dplyr, tidyverse,
-               knitr, kableExtra, see,
-               gridExtra, #modelsummary, 
-               gtsummary, ggplot2,
-               ggbeeswarm, GGally, ggtext, cowplot,
-               report)
+pacman::p_load(
+  # ETL/data wrangling
+  readr, readxl, janitor,
+  tidyverse,
+  dplyr, 
+  skimr, 
+  # pillar, 
+  # see,
+  #modelsummary, 
+  # report,
+  # Data Viz
+  rmarkdown, 
+  knitr, 
+  ## Gráficos
+  ggplot2,
+  GGally, 
+  ggtext, 
+  ggbeeswarm, 
+  gridExtra,
+  cowplot,
+  ## Tabelas
+  kableExtra, 
+  gtsummary,
+  formattable
+  )
 # pacman::p_load(tibbletime)
 # cite_packages()
 ```
@@ -1621,8 +1640,8 @@ ggsave("od_p3.png",
 
 ```{r Gráfico DBO período3, echo = FALSE, warning = FALSE, message = FALSE}
 (dbo_p3 <- plan_wide_19902020 %>% 
-   filter(ano_coleta>"2010" &
-            ano_coleta<="2020") %>% 
+   filter(ano_coleta > "2010" &
+          ano_coleta <= "2020") %>% 
    boxplot_dbo(
     titulo = "Demanda Bioquímica de Oxigênio no período 2010-2020",
   )
@@ -2551,7 +2570,7 @@ ggsave("ecoli_p3.png",
 (namon <- plan_wide_19902020 %>% 
   boxplot_namon(
     eixo_y = nitrogenio_amoniacal,
-    titulo = "Nitrogênio Amoaniacal no período 1990-2020"
+    titulo = "Nitrogênio Amoniacal no período 1990-2020"
     )+
   facet_wrap(~periodo)
  )
@@ -3335,7 +3354,7 @@ ggsave("SolTot_p3.png",
        type = "cairo")
 ```
 
-## Condutividade elétrica
+### Condutividade elétrica
 
 ```{r Gráfico cond_elet facetted, fig.cap="condutividade-eletrica-gravataí no período 1990-2020", warning = FALSE, message = FALSE}
 (cond_elet <- plan_wide_19902020 %>% 
@@ -4210,6 +4229,29 @@ parametros_IQA %>%
   plot()
 ```
 
+# EDA
+
+```{r}
+eda_all_time <- plan_wide_19902020 %>% 
+  select(
+    oxigenio_dissolvido, 
+    dbo, 
+    fosforo_total, 
+    solidos_totais, 
+    escherichia_coli, 
+    nitrogenio_amoniacal, 
+    temperatura_agua, 
+    turbidez, 
+    pH, 
+    condutividade, 
+    periodo
+  ) %>% 
+  skimr::skim() %>% 
+  arrange(
+    desc(complete_rate)
+  )
+```
+
 # Textando o texto
 
 -   § falar do comportamento geral dos dados
@@ -4217,7 +4259,17 @@ parametros_IQA %>%
 
 `r sum_od_p1$PM1[1]`
 
-Os resultados apontam que para o parâmetro OD
+Dentre os parâmetros selecionados para a análise, todos, com exceção ao nitrogênio amoniacal, possuíram mais que 85% das amostras com valores medidos. O nitrogênio amoniacal teve `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[4] %>% pluck(1) %>% percent()` dos valores medidos com `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[3] %>% pluck(1)` dados faltantes, dos 1.179 totais. A temperatura da água foi o parâmetro mais completo, com `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[4] %>% pluck(1) %>% percent()` das medições e apenas `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[3] %>% pluck(1)` dados faltantes.
+
+Os resultados apontam que há uma queda na qualidade da água no sentido montante-jusante para os parâmetros OD, DBO, Fósforo total, Nitrogênio amoniacal e condutividade elétrica. A *E. coli* teve, durante a primeira década, melhora da qualidade ao longo do rio, contudo, houve uma reversão na tendência para os dois períodos subsequentes.
+
+A turbidez registrou, ao sumarizar a série por período, valores médios de `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[1,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")`, `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[2,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")` e `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[3,6] %>% pluck(1) %>% formatC(digits = 3, format = "f")` UNT, respectivamente.
+
+# Discussão
+A redução dos valores de turbidez no período 2010-2020 ocorreu por conta de ações tomadas pelo setor público: Fepam, Brigada ambiental. [^1]
+
+[^1]: Inserir referência.
+
 
 # Gráficos exemplos boxplot
 
@@ -4668,7 +4720,7 @@ grid.arrange(
   tukey_boxplot, box_percentile_plot, 
   ncol = 2
   )
-fig_tukey_garrett <- plot_grid(tukey_boxplot, box_percentile_plot, 
+fig_tukey_garrett <- plot_grid(tukey_boxplot, box_percentile_plot,
                                labels = "AUTO")
 ```
 
