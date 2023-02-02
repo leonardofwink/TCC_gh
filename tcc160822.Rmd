@@ -120,13 +120,18 @@ pacman::p_load(
   ggplot2,
   GGally, 
   ggtext, 
+  scales,
   ggbeeswarm, 
   gridExtra,
   cowplot,
   ## Tabelas
+  SmartEDA, 
   kableExtra, 
   gtsummary,
-  formattable
+  formattable,
+  
+  # Mapas
+  leaflet
   )
 # pacman::p_load(tibbletime)
 # cite_packages()
@@ -169,7 +174,9 @@ plan_wide_19902020 <- read_delim("https://raw.githubusercontent.com/leonardofwin
   rename(
     pH = p_h,
     iqa_pH = iqa_p_h,
-    iqa_pH_2 = iqa_p_h_2
+    iqa_pH_2 = iqa_p_h_2,
+    latitude = latitude_corrigida,
+    longitude = longitude_corrigida
   ) %>% 
   mutate(
     ponto_monitoramento = case_when(
@@ -182,7 +189,14 @@ plan_wide_19902020 <- read_delim("https://raw.githubusercontent.com/leonardofwin
       codigo == "87409900" ~ "PM7"
     )
   ) %>% 
-  select(codigo, ponto_monitoramento, everything()) %>% #reordenando colunas
+  select(
+    codigo, ponto_monitoramento, municipio, endereco, latitude, longitude, 
+    everything()
+    ) %>% 
+  select(
+    -coord_geo_lat_grau,
+    -coord_geo_long_grau,
+    ) %>% #reordenando colunas
   arrange(data_coleta, ponto_monitoramento)
 # teste <- plan_wide_19902020 %>%
 #   dplyr::filter(data_coleta >= as.POSIXct("2010-01-01")) #this works
@@ -345,44 +359,54 @@ plan_wide_19902020 <- plan_wide_19902020 %>%
   )
 ```
 
+O `code chunk` abaixo vai ser utilizado para a geração dos gráficos ao longo do tempo.
+
+```{r, echo=TRUE}
+periodo_inicial <- as.Date("1990-01-01", "%Y-%m-%d")
+periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
+```
+
 # setting sumaries
 
 ```{r Sumários, echo = FALSE}
-sumario <- function(dados = plan_wide_19902020, parametro = "") {
+sumario <- function(dados = plan_wide_19902020, parametro = x) {
+  library(dplyr)
   dados %>% 
     # filter(ano_coleta>"1990" &
     #          ano_coleta<="2000") %>%
-    group_by(ponto_monitoramento) %>%
+    dplyr::group_by(ponto_monitoramento, periodo) %>%
     summarize(
       min =
-        min(parametro,
+        min(x,
             na.rm = TRUE),
       p05 = 
-        quantile(parametro, 0.05,
+        quantile(x, 0.05,
                  na.rm = TRUE),
       p20 =
-        quantile(parametro, 0.20,
+        quantile(x, 0.20,
                  na.rm = TRUE),
       median =
-        median(parametro,
+        median(x,
                na.rm = TRUE),
       mean =
-        mean(parametro,
+        mean(x,
              na.rm= TRUE),
       p80 =
-        quantile(parametro, 0.80,
+        quantile(x, 0.80,
                  na.rm = TRUE),
       p95 =
-        quantile(parametro, 0.95,
+        quantile(x, 0.95,
                  na.rm = TRUE),
       max =
-        max(parametro,
-            na.rm = TRUE)
+        max(x,
+            na.rm = TRUE),
+      
+      .groups = "drop"
       )
 }
 ```
 
-# Funções
+# Funções - boxplot
 
 ## criando função para gerar boxplots com percentil 20 e 80
 
@@ -481,7 +505,125 @@ boxplot_od <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = oxi
 }
 ```
 
-## DBO
+```{r gerando function ts_od, echo=TRUE}
+ts_od <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = oxigenio_dissolvido, titulo = "Oxigênio Dissolvido"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, oxigenio_dissolvido, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = -Inf, ymax = 2,
+             alpha = 1,
+             fill = "#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 2, ymax = 4,
+             alpha = 1,
+             fill = "#eb5661")+ #classe 4
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 4, ymax = 5,
+             alpha = 1,
+             fill = "#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 5, ymax = 6,
+             alpha = 1,
+             fill = "#70c18c")+ #classe 2
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 6, ymax = Inf,
+             alpha = 1,
+             fill = "#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y ="mg/L"
+    )+
+    geom_vline(
+     xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
+}
+```
+
+## Demanda Bioquímica de Oxigênio
 
 ```{r gerando function graf dbo, echo = TRUE}
 boxplot_dbo <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = dbo, titulo = "Demanda Bioquímica de Oxigênio"){
@@ -560,7 +702,120 @@ boxplot_dbo <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = db
 }
 ```
 
-## Ptot
+```{r gerando function ts_dbo, echo = TRUE}
+ts_dbo <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = dbo, titulo = "Demanda Bioquímica de Oxigênio"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, dbo, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 10, ymax = Inf,
+             alpha = 1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 5, ymax = 10,
+             alpha = 1,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 3, ymax = 5,
+             alpha = 1,
+             fill="#70c18c")+ #classe 2
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = -Inf, ymax = 3,
+             alpha = 1,
+             fill = "#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y ="mg/L"
+    )+
+    geom_vline(
+     xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
+}
+```
+
+## Fósforo total
 
 ```{r gerando function graf ptot, echo = TRUE}
 boxplot_ptot <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = fosforo_total, titulo = "Fósforo total"){
@@ -642,7 +897,115 @@ boxplot_ptot <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = f
 }
 ```
 
-## E coli
+```{r gerando function ts_ptot, echo = TRUE}
+ts_ptot <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = fosforo_total, titulo = "Fósforo total"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, fosforo_total, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+            xmin = periodo_inicial, xmax = periodo_final,
+            ymin=0.15, ymax=Inf,
+            alpha=1,
+            fill="#ac5079")+ #>pior classe
+   annotate("rect",
+           xmin = periodo_inicial, xmax = periodo_final,
+            ymin=0.1, ymax=0.15,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+            xmin = periodo_inicial, xmax = periodo_final,
+            ymin=0,ymax=0.1,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y ="mg/L"
+    )+
+    geom_vline(
+     xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
+}
+```
+
+## Escherichia coli
 
 ```{r funcao-graf-ecoli, echo = TRUE}
 boxplot_ecoli <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = escherichia_coli, titulo = "*Escherichia coli*"){
@@ -653,87 +1016,225 @@ boxplot_ecoli <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = 
       y = {{eixo_y}}
     )
   )+
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=3200, ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=800, ymax=3200,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=160, ymax=800,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=0, ymax=160,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
-   )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   # facet_wrap(~periodo)+
-   labs(title = titulo,
-        x="Estação",
-        y="NMP/100mL")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      # n.breaks = 9,
-                      n.breaks = 6,
-                      limits = c(min(plan_wide_19902020$escherichia_coli, na.rm = TRUE),
-                                 max(plan_wide_19902020$escherichia_coli, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               size = 1)+
-   theme_grafs()+
+    annotate("rect",
+             xmin=-Inf, xmax=Inf,
+             ymin=3200, ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin=-Inf, xmax=Inf,
+             ymin=800, ymax=3200,
+             alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin=-Inf, xmax=Inf,
+             ymin=160, ymax=800,
+             alpha=1,
+             fill="#70c18c")+ #classe 2
+    annotate("rect",
+             xmin=-Inf, xmax=Inf,
+             ymin=0, ymax=160,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    stat_summary(
+      fun.data = f,
+      geom = 'errorbar',
+      width = 0.3,
+      position = position_dodge(width = 0.65),
+    )+
+    stat_summary(
+      fun.data = f,
+      geom = "boxplot",
+      width = 0.7,
+      fill = '#F8F8FF',
+      color = "black",
+      outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
+    )+
+    # facet_wrap(~periodo)+
+    labs(title = titulo,
+         x="Estação",
+         y="NMP/100mL")+
+    ggbeeswarm::geom_quasirandom(
+      size = 1.2,
+      alpha = .25,
+      width = .07,
+    )+
+    scale_x_discrete(limits = c("87398500", 
+                                "87398980", 
+                                "87398900", 
+                                "87398950", 
+                                "87405500", 
+                                "87406900", 
+                                "87409900"),
+                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
+    )+
+    scale_y_log10(
+      breaks = trans_breaks("log10", function(x) 10^x),
+      labels = trans_format("log10", math_format(10^.x)),
+      expand = expansion(mult = c(0.05, 0.25)),
+      n.breaks = 9,
+    )+
+    annotation_logticks(sides = "l",
+                        size = 0.01,
+                        outside = TRUE)+
+    coord_cartesian(clip = "off")+
+    geom_smooth(method = "lm",
+                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
+                aes(group=1),
+                alpha=.5,
+                na.rm = TRUE,
+                size = 1)+
+    theme_grafs()+
     theme(
-        axis.text.y = element_text(
-          angle = 90, 
-          # size=15,
-          # face=2
-        ),
-        plot.title = 
-          element_markdown(
-            hjust = 0.5,
-            color = "black",
-            size = 19)
+      # axis.text.y = element_text(
+      #   angle = 90, 
+      #   # size=15,
+      #   # face=2
+      # ),
+      plot.title = 
+        element_markdown(
+          hjust = 0.5,
+          color = "black",
+          size = 19),
+      
+      panel.spacing.x = unit(0.7, "lines"),
+      axis.ticks.length.y = unit(0.3, "cm"),
     )
 }
+```
+
+```{r gerando function ts_ecoli, echo = TRUE}
+ts_ecoli <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = escherichia_coli, titulo = "*Escherichia coli*"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, escherichia_coli, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin=3200, ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin=800, ymax=3200,
+             alpha=1,
+             fill="#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin=160, ymax=800,
+             alpha=1,
+             fill="#70c18c")+ #classe 2
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin=0, ymax=160,
+             alpha=1,
+             fill="#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y ="mg/L"
+    )+
+    geom_vline(
+     xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_markdown(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      # axis.ticks.length.y = unit(0.3, "cm"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
+}
+
+boxplot_ecoli()+
+  facet_wrap(~periodo)
+
+ts_ecoli()+
+  geom_vline(
+     xintercept = as.Date(c("2007-01-01"), "%Y-%m-%d"),
+     color = "red",
+     linetype = "dashed",
+  )+
+  scale_y_log10(
+      breaks = trans_breaks("log10", function(x) 10^x),
+      labels = trans_format("log10", math_format(10^.x)),
+      expand = expansion(mult = c(0.05, 0.25)),
+      n.breaks = 9,
+    )
+    # annotation_logticks(sides = "l",
+    #                     size = 0.01,
+    #                     outside = TRUE)+
+    # coord_cartesian(clip = "off")
 ```
 
 ## Nitrogênio Amoniacal
@@ -818,6 +1319,114 @@ boxplot_namon <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = 
 }
 ```
 
+```{r gerando function graf namon line, echo = TRUE}
+ts_nitro <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = nitrogenio_amoniacal, titulo = "Nitrogênio Amoniacal"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, nitrogenio_amoniacal, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 13.3, ymax = Inf,
+             alpha = 1,
+             fill = "#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 3.7, ymax = 13.3,
+             alpha = 1,
+             fill = "#fcf7ab")+ #classe 3
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 0, ymax = 3.7,
+             alpha = 1,
+             fill = "#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y ="mg/L"
+    )+
+    geom_vline(
+     xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
+}
+```
+
 ## Turbidez
 
 ```{r gerando function graf turb, echo = TRUE}
@@ -895,7 +1504,114 @@ boxplot_turb <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = t
                size = 1)+
     theme_grafs()
 }
+```
 
+```{r gerando function graf turbidez line, echo = TRUE}
+ts_turbidez <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = turbidez, titulo = "Turbidez"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, turbidez, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin=100, ymax=Inf,
+             alpha=1,
+             fill="#ac5079")+ #>pior classe
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+            ymin=40, ymax=100,
+            alpha=1,
+            fill="#fcf7ab")+ #classe 3
+   annotate("rect",
+           xmin = periodo_inicial, xmax = periodo_final,
+            ymin=0, ymax=40,
+            alpha=1,
+            fill="#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y ="mg/L"
+    )+
+    geom_vline(
+     xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
+}
 ```
 
 ## pH
@@ -1162,12 +1878,32 @@ boxplot_cond_elet <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_
 )
 ```
 
+```{r gráfico time-series OD, echo = TRUE, warning=FALSE, message=FALSE}
+(od_overtime <- ts_od()+
+   scale_y_continuous(
+     expand = expansion(mult = c(0.05, 0.05)),
+     n.breaks = 6,
+     trans = scales::pseudo_log_trans(base=10),
+     breaks = c(0, 2, 4, 8, 16),
+   )
+)
+```
+
 ```{r Salvando OD, warning=FALSE, message = FALSE,}
 ggsave("od.png",
        units = c("px"),
        width = 4500,
        height = 2993,
        plot = od,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("od_overtime.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = od_overtime,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -1444,161 +2180,108 @@ ggsave("od_p3.png",
 ```
 
 ```{r Sumário OD, echo = FALSE, warning=FALSE, message = FALSE,}
-(sum_od_p1 <- plan_wide_19902020 %>%
-    select(codigo, oxigenio_dissolvido, ano_coleta) %>% 
-    filter(ano_coleta > "1990" &
-             ano_coleta <= "2000") %>% 
-   group_by(codigo) %>% 
-   # codigo == "87398500" <- "teste1"
-    # %>% 
- summarize(
-       max = 
-         max(oxigenio_dissolvido, na.rm = TRUE),
-       p95 = 
-         quantile(oxigenio_dissolvido, 0.95, na.rm = TRUE),
-       p80 = 
-         quantile(oxigenio_dissolvido, 0.80, na.rm = TRUE),
-       median = 
-         median(oxigenio_dissolvido, na.rm = TRUE),
-       mean = 
-         mean(oxigenio_dissolvido, na.rm= TRUE),
-       p20 = 
-         quantile(oxigenio_dissolvido, 0.20, na.rm = TRUE),
-       p05 = 
-         quantile(oxigenio_dissolvido, 0.05, na.rm = TRUE),
-       min = 
-         min(oxigenio_dissolvido, na.rm = TRUE),
-       n = 
-         length(oxigenio_dissolvido)
- ) %>% 
-    pivot_longer(
-       !codigo,
-       names_to = "par",
-       values_to = "valor"
-    ) %>% 
-    pivot_wider(names_from = codigo,
-                values_from = valor) %>% 
-   rename(
-     "PM1" = "87398500",
-     "PM2" = "87398900",
-     "PM3" = "87398950",
-     "PM4" = "87398980",
-     "PM5" = "87405500",
-     "PM6" = "87406900",
-     "PM7" = "87409900"
-   ) 
- )
-
-# teste1 <- parametros_IQA %>% 
-#   group_by(codigo) %>% 
-#   pivot_longer(
-#     !codigo,
-#     names_to = "parametro",
-#     values_to = "valor"
-#   ) %>% 
-#   # group_by(parametro)
-#   pivot_wider(
-#     names_from = codigo,
-#     values_from = valor,
-#     # .groups = "drop"
-#   ) %>% 
-#   rename(
-#     "PM1" = "87398500",
-#     "PM2" = "87398900",
-#     "PM3" = "87398950",
-#     "PM4" = "87398980",
-#     "PM5" = "87405500",
-#     "PM6" = "87406900",
-#     "PM7" = "87409900"
-#   ) %>%
-#   select(par, PM1, PM2, PM3, PM4, PM5, PM6, PM7) %>% 
-#   filter(
-#     par == "pH"
-#   ) 
-# %>% 
-#   unnest(dplyr::everything())
+# (sum_od_p1 <- plan_wide_19902020 %>%
+#     select(ponto_monitoramento, oxigenio_dissolvido, ano_coleta) %>% 
+#     filter(ano_coleta > "1990" &
+#              ano_coleta <= "2000") %>% 
+#    group_by(ponto_monitoramento) %>% 
+#    # codigo == "87398500" <- "teste1"
+#     # %>% 
+#  summarize(
+#        max = 
+#          max(oxigenio_dissolvido, na.rm = TRUE),
+#        p95 = 
+#          quantile(oxigenio_dissolvido, 0.95, na.rm = TRUE),
+#        p80 = 
+#          quantile(oxigenio_dissolvido, 0.80, na.rm = TRUE),
+#        median = 
+#          median(oxigenio_dissolvido, na.rm = TRUE),
+#        mean = 
+#          mean(oxigenio_dissolvido, na.rm= TRUE),
+#        p20 = 
+#          quantile(oxigenio_dissolvido, 0.20, na.rm = TRUE),
+#        p05 = 
+#          quantile(oxigenio_dissolvido, 0.05, na.rm = TRUE),
+#        min = 
+#          min(oxigenio_dissolvido, na.rm = TRUE),
+#        n = 
+#          length(oxigenio_dissolvido)
+#  ) %>% 
+#     pivot_longer(
+#        !ponto_monitoramento,
+#        names_to = "par",
+#        values_to = "valor"
+#     ) %>% 
+#     pivot_wider(names_from = ponto_monitoramento,
+#                 values_from = valor) 
+#  # %>% 
+#  # rename(
+#  #   "PM1" = "87398500",
+#  #   "PM2" = "87398900",
+#  #   "PM3" = "87398950",
+#  #   "PM4" = "87398980",
+#  #   "PM5" = "87405500",
+#  #   "PM6" = "87406900",
+#  #   "PM7" = "87409900"
+#  # ) 
+# )
+sum_od_p1 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "1990-2000"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("oxigenio_dissolvido"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)  
 
 
-# teste1$PM1[2]
+sum_od_p2 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2000-2010"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("oxigenio_dissolvido"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)  
 
-# %>%
-#   summarize(
-#     max =
-#       max(oxigenio_dissolvido, na.rm = TRUE),
-#     q3 =
-#       quantile(oxigenio_dissolvido, 0.75, na.rm = TRUE),
-#     median =
-#       median(oxigenio_dissolvido, na.rm = TRUE),
-#     mean =
-#       mean(oxigenio_dissolvido, na.rm= TRUE),
-#     q1 =
-#       quantile(oxigenio_dissolvido, 0.25, na.rm = TRUE),
-#     min =
-#       min(oxigenio_dissolvido, na.rm = TRUE),
-#     n =
-#       length(oxigenio_dissolvido)
-#     )
-# #     
-# 
-# sum(sum_od_p1$n)
-
-
-
-(sum_od_p2 <- plan_wide_19902020 %>%
-      select(codigo, oxigenio_dissolvido, ano_coleta) %>% 
-      filter(ano_coleta>"2000" &
-                ano_coleta<="2010") %>% 
-      group_by(codigo) %>% 
-      summarize(
-         min = 
-            min(oxigenio_dissolvido, na.rm = TRUE),
-         q1 = 
-            quantile(oxigenio_dissolvido, 0.25, na.rm = TRUE),
-         median = 
-            median(oxigenio_dissolvido, na.rm = TRUE),
-         mean = 
-            mean(oxigenio_dissolvido, na.rm= TRUE),
-         q3 = 
-            quantile(oxigenio_dissolvido, 0.75, na.rm = TRUE),
-         max = 
-            max(oxigenio_dissolvido, na.rm = TRUE)
-      )
-)
-
-(sum_od_p3 <- plan_wide_19902020 %>%
-      select(codigo, oxigenio_dissolvido, ano_coleta) %>% 
-      filter(ano_coleta>"2010" &
-                ano_coleta<="2020") %>% 
-      group_by(codigo) %>% 
-      summarize(
-         min = 
-            min(oxigenio_dissolvido, na.rm = TRUE),
-         q1 = 
-            quantile(oxigenio_dissolvido, 0.25, na.rm = TRUE),
-         median = 
-            median(oxigenio_dissolvido, na.rm = TRUE),
-         mean = 
-            mean(oxigenio_dissolvido, na.rm= TRUE),
-         q3 = 
-            quantile(oxigenio_dissolvido, 0.75, na.rm = TRUE),
-         max = 
-            max(oxigenio_dissolvido, na.rm = TRUE)
-      )
-)
-
-#   pivot_wider(id_cols = codigo,
-#               names_from = codigo,
-#               values_from = oxigenio_dissolvido)
-# 
-# 
-#   group_by(codigo) %>%
-#   get_summary_stats(type = "common") %>%
-#   pivot_wider(id_cols = variable,
-#               names_from = codigo,
-#               values_from = variable$oxigenio_dissolvido)
-# 
-# # install.packages("ggpubr")
-# # library(ggpubr)
+sum_od_p3 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2010-2020"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("oxigenio_dissolvido"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 ```
 
 ### Demanda Bioquímica de Oxigênio
@@ -1640,6 +2323,17 @@ ggsave("od_p3.png",
     titulo = "Demanda Bioquímica de Oxigênio no período 2010-2020",
   )
 )
+```
+
+```{r gráfico time-series dbo, echo=TRUE, warning=FALSE, message=FALSE}
+(dbo_overtime <- ts_dbo()+
+  scale_y_continuous(
+     expand = expansion(mult = c(0.05, 0.05)),
+     breaks = c(0, 1, 3, 5, 10, 20, 40, 60),
+     # n.breaks = 6,
+     trans = scales::pseudo_log_trans(base=10),
+   )
+ )
 ```
 
 ```{r Gráfico IQA DBO periodo1, echo = FALSE, warning = FALSE, message = FALSE}
@@ -1880,83 +2574,62 @@ ggsave("od_p3.png",
 ```
 
 ```{r Sumário DBO, warning=FALSE, message = FALSE,}
-(sum_dbo_p1 <- plan_wide_19902020 %>%
-   select(codigo, dbo, ano_coleta) %>% 
-   filter(ano_coleta>"1990" &
-            ano_coleta<="2000") %>% 
-   group_by(codigo) %>% 
-   summarize(
-     min = 
-       min(dbo, 
-           na.rm = TRUE),
-     q1 = 
-       quantile(dbo, 0.25, 
-                na.rm = TRUE),
-     median = 
-       median(dbo, 
-              na.rm = TRUE),
-     mean = 
-       mean(dbo, 
-            na.rm= TRUE),
-     q3 = 
-       quantile(dbo, 0.75, 
-                na.rm = TRUE),
-     max = 
-       max(dbo, 
-           na.rm = TRUE))
-)
+sum_dbo_p1 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "1990-2000"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("dbo"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 
-(sum_dbo_p2 <- plan_wide_19902020 %>%
-    select(codigo, dbo, ano_coleta) %>% 
-    filter(ano_coleta>"2000" &
-             ano_coleta<="2010") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(dbo, 
-            na.rm = TRUE),
-      q1 = 
-        quantile(dbo, 0.25, 
-                 na.rm = TRUE),
-      median = 
-        median(dbo, 
-               na.rm = TRUE),
-      mean = 
-        mean(dbo, 
-             na.rm= TRUE),
-      q3 = 
-        quantile(dbo, 0.75, 
-                 na.rm = TRUE),
-      max = 
-        max(dbo, 
-            na.rm = TRUE))
-)
+sum_dbo_p2 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2000-2010"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("dbo"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 
-(sum_dbo_p3 <- plan_wide_19902020 %>%
-    select(codigo, dbo, ano_coleta) %>% 
-    filter(ano_coleta>"2010" &
-             ano_coleta<="2020") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(dbo, 
-            na.rm = TRUE),
-      q1 = 
-        quantile(dbo, 0.25, 
-                 na.rm = TRUE),
-      median = 
-        median(dbo, 
-               na.rm = TRUE),
-      mean = 
-        mean(dbo, 
-             na.rm= TRUE),
-      q3 = 
-        quantile(dbo, 0.75, 
-                 na.rm = TRUE),
-      max = 
-        max(dbo, 
-            na.rm = TRUE))
-)
+sum_dbo_p3 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2010-2020"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("dbo"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 ```
 
 ```{r Salvando DBO, warning=FALSE, message = FALSE,}
@@ -1965,6 +2638,15 @@ ggsave("dbo.png",
        width = 4500,
        height = 2993,
        plot = dbo,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("dbo_overtime.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = dbo_overtime,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -1999,6 +2681,20 @@ ggsave("dbo_p3.png",
 )
 ```
 
+```{r gráfico time-series ptot, echo=TRUE, warning=FALSE, message=FALSE}
+(ptot_overview <- ts_ptot()+
+   scale_y_continuous(expand = expansion(mult = c(0.03,0.03)),
+                      n.breaks = 5,
+                      limits = c(min(plan_wide_19902020$fosforo_total, na.rm = TRUE)/2,
+                                 max(plan_wide_19902020$fosforo_total, na.rm = TRUE)*3),
+                      trans = "log10",
+                      labels = scales::number_format(accuracy = .001,
+                                                     decimal.mark = ",",
+                                                     big.mark = " ")
+   )
+)
+```
+
 ```{r Gráfico Fósforo total periodo1, echo = FALSE, warning = FALSE, message = FALSE}
 (ptot_p1 <- plan_wide_19902020%>% 
    filter(ano_coleta>"1990" &
@@ -2030,63 +2726,62 @@ ggsave("dbo_p3.png",
 ```
 
 ```{r Sumário Fósforo total, warning=FALSE, message = FALSE,}
-(sum_ptot_p1 <- plan_wide_19902020 %>%
-    select(codigo, fosforo_total, ano_coleta) %>% 
-   filter(ano_coleta>"1990" &
-            ano_coleta<="2000") %>% 
-   group_by(codigo) %>% 
-   summarize(
-     min = 
-       min(fosforo_total, na.rm = TRUE),
-     q1 = 
-       quantile(fosforo_total, 0.25, na.rm = TRUE),
-     median = 
-       median(fosforo_total, na.rm = TRUE),
-     mean = 
-       mean(fosforo_total, na.rm= TRUE),
-     q3 = 
-       quantile(fosforo_total, 0.75, na.rm = TRUE),
-     max = 
-       max(fosforo_total, na.rm = TRUE)))
+sum_ptot_p1 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "1990-2000"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("fosforo_total"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 
-(sum_ptot_p2 <- plan_wide_19902020 %>%
-    select(codigo, fosforo_total, ano_coleta) %>% 
-    filter(ano_coleta>"2000" &
-             ano_coleta<="2010") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(fosforo_total, na.rm = TRUE),
-      q1 = 
-        quantile(fosforo_total, 0.25, na.rm = TRUE),
-      median = 
-        median(fosforo_total, na.rm = TRUE),
-      mean = 
-        mean(fosforo_total, na.rm= TRUE),
-      q3 = 
-        quantile(fosforo_total, 0.75, na.rm = TRUE),
-      max = 
-        max(fosforo_total, na.rm = TRUE)))
+sum_ptot_p2 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2000-2010"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("fosforo_total"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 
-(sum_ptot_p3 <- plan_wide_19902020 %>%
-    select(codigo, fosforo_total, ano_coleta) %>% 
-    filter(ano_coleta>"2010" &
-             ano_coleta<="2020") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(fosforo_total, na.rm = TRUE),
-      q1 = 
-        quantile(fosforo_total, 0.25, na.rm = TRUE),
-      median = 
-        median(fosforo_total, na.rm = TRUE),
-      mean = 
-        mean(fosforo_total, na.rm= TRUE),
-      q3 = 
-        quantile(fosforo_total, 0.75, na.rm = TRUE),
-      max = 
-        max(fosforo_total, na.rm = TRUE)))
-
+sum_ptot_p3 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2010-2020"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("fosforo_total"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 ```
 
 ```{r Salvando Ptot, warning=FALSE, message = FALSE,}
@@ -2095,6 +2790,15 @@ ggsave("ptot.png",
        width = 4500,
        height = 2993,
        plot = ptot,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("ptot_overview.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = ptot_overview,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -2124,179 +2828,45 @@ ggsave("ptot_p3.png",
 (ecoli <- boxplot_ecoli(
   titulo = "*Escherichia coli* no período 1990-2020"
 )+
-  scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                     # n.breaks = 9,
-                     n.breaks = 6,
-                     limits = c(min(plan_wide_19902020$escherichia_coli, na.rm = TRUE),
-                                max(plan_wide_19902020$escherichia_coli, na.rm = TRUE)),
-                     trans = "log10",
-                     # labels = scales::number_format(accuracy = 1,
-                     #                                decimal.mark = ",",
-                     #                                big.mark = " ")
-  )+
+  # scale_y_log10(
+  #   breaks = trans_breaks("log10", function(x) 10^x),
+  #   labels = trans_format("log10", math_format(10^.x)),
+  #   expand = expansion(mult = c(0.05, 0.25)),
+  #   n.breaks = 9,
+  # )+
+  # annotation_logticks(sides = "l",
+  #                     size = 0.01,
+  #                     outside = TRUE)+
+  # coord_cartesian(clip = "off")+
   facet_wrap(~periodo)
-)
-
-(ecoli <- ggplot(plan_wide_19902020,
-                 aes(codigo,
-                     escherichia_coli))+
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=3200, ymax=Inf,
-            alpha=1,
-            fill="#ac5079")+ #>pior classe
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=800, ymax=3200,
-            alpha=1,
-            fill="#fcf7ab")+ #classe 3
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=160, ymax=800,
-            alpha=1,
-            fill="#70c18c")+ #classe 2
-   annotate("rect",
-            xmin=-Inf, xmax=Inf,
-            ymin=0, ymax=160,
-            alpha=1,
-            fill="#8dcdeb")+ #classe 1
-   stat_summary(
-     fun.data = f,
-     geom = 'errorbar',
-     width = 0.3,
-     position = position_dodge(width = 0.65),
-   )+
-   stat_summary(
-     fun.data = f,
-     geom = "boxplot",
-     width = 0.7,
-     fill = '#F8F8FF',
-     color = "black",
-     outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-   )+
-   facet_wrap(~periodo)+
-   labs(title = "*Escherichia coli* no período 1990-2020",
-        x="Estação",
-        y="NMP/100mL")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      # n.breaks = 9,
-                      n.breaks = 6,
-                      limits = c(min(plan_wide_19902020$escherichia_coli, na.rm = TRUE),
-                                 max(plan_wide_19902020$escherichia_coli, na.rm = TRUE)),
-                      trans = "log10",
-                      # labels = scales::number_format(accuracy = 1,
-                      #                                decimal.mark = ",",
-                      #                                big.mark = " ")
-                      )+
-   ggbeeswarm::geom_quasirandom(
-     size = 1.2,
-     alpha = .25,
-     width = .07,
-   )+
-   scale_x_discrete(limits = c("87398500", 
-                               "87398980", 
-                               "87398900", 
-                               "87398950", 
-                               "87405500", 
-                               "87406900", 
-                               "87409900"),
-                    labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-   )+
-   geom_smooth(method = "lm",
-               se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-               aes(group=1),
-               alpha=.5,
-               na.rm = TRUE,
-               linewidth = 1)+
-   theme_grafs()+
-    theme(
-        axis.text.y = element_text(
-          angle = 90, 
-          # size=15,
-          # face=2
-        ),
-        plot.title = 
-          element_markdown(
-            hjust = 0.5,
-            color = "black",
-            size = 19)
-    )
+  # theme(
+  #   panel.spacing.x = unit(0.7, "lines"),
+  #   axis.ticks.length.y = unit(0.3, "cm"),
+  # )
 )
 ```
 
 ```{r Gráfico Ecoli periodo1, warning = FALSE, message = FALSE}
-(ecoli_p1 <- ggplot(plan_wide_19902020 %>% 
-                       filter(ano_coleta>"1990" &
-                                 ano_coleta<="2000"),
-                    aes(codigo,
-                        escherichia_coli))+
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=3200,
-             ymax=Inf,
-             alpha=1,
-             fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=800,
-             ymax=3200,
-             alpha=1,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=160,
-             ymax=800,
-             alpha=1,
-             fill="#70c18c")+ #classe 2
-    annotate("rect",
-             xmin=-Inf,
-             xmax=Inf,
-             ymin=0,
-             ymax=160,
-             alpha=1,
-             fill="#8dcdeb")+ #classe 1
-    stat_boxplot(geom = 'errorbar',
-                 width=0.3,
-                 position = position_dodge(width = 0.65))+
-    geom_boxplot(fill='#F8F8FF',
-                 color="black",
-                 outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-                 width= 0.7)+
-    labs(title = "Escherichia coli no período 1990-2000",
-         x="Estação",
-         y="NMP/100mL")+
-   scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      n.breaks = 9,
-                      limits = c(min(plan_wide_19902020$escherichia_coli, na.rm = TRUE),
-                                 max(plan_wide_19902020$escherichia_coli, na.rm = TRUE)),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
-    ggbeeswarm::geom_quasirandom(
-       size = 1.2,
-       alpha = .25,
-       width = .07,
-    )+
-    scale_x_discrete(limits = c("87398500", 
-                                "87398980", 
-                                "87398900", 
-                                "87398950", 
-                                "87405500", 
-                                "87406900", 
-                                "87409900"),
-                     labels = c("PM1", "PM2", "PM3", "PM4", "PM5", "PM6", "PM7")
-    )+
-    geom_smooth(method = "lm",
-                se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-                aes(group=1),
-                alpha=.5,
-                na.rm = TRUE,
-                linewidth = 1)+
-    theme_grafs()
+(ecoli_p1 <- plan_wide_19902020 %>% 
+   filter(periodo == "1990-2000") %>% 
+   boxplot_ecoli(
+     titulo = "*Escherichia coli* no período 1990-2000"
+   )+
+  scale_y_log10(
+    breaks = trans_breaks("log10", function(x) 10^x),
+    labels = trans_format("log10", math_format(10^.x)),
+    expand = expansion(mult = c(0.05, 0.25)),
+    n.breaks = 9,
+  )+
+  annotation_logticks(sides = "l",
+                      size = 0.01,
+                      outside = TRUE)+
+  coord_cartesian(clip = "off")+
+  # facet_wrap(~periodo)+
+  theme(
+    panel.spacing.x = unit(0.7, "lines"),
+    axis.ticks.length.y = unit(0.3, "cm"),
+  )
 )
 ```
 
@@ -2453,83 +3023,62 @@ ggsave("ptot_p3.png",
 ```
 
 ```{r Sumário Ecoli, warning=FALSE, message = FALSE,}
-(sum_ecoli_p1 <- plan_wide_19902020 %>%
-    select(codigo, escherichia_coli, ano_coleta) %>% 
-    filter(ano_coleta>"1990" &
-              ano_coleta<="2000") %>% 
-   group_by(codigo) %>% 
-   summarize(
-     min = 
-       min(escherichia_coli, 
-           na.rm = TRUE),
-     q1 = 
-       quantile(escherichia_coli, 0.25, 
-                na.rm = TRUE),
-     median = 
-       median(escherichia_coli, 
-              na.rm = TRUE),
-     mean = 
-       mean(escherichia_coli, 
-            na.rm= TRUE),
-     q3 = 
-       quantile(escherichia_coli, 0.75, 
-                na.rm = TRUE),
-     max = 
-       max(escherichia_coli, 
-           na.rm = TRUE))
-)
+sum_ecoli_p1 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "1990-2000"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("escherichia_coli"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 
-(sum_ecoli_p2 <- plan_wide_19902020 %>%
-    select(codigo, escherichia_coli, ano_coleta) %>% 
-    filter(ano_coleta>"2000" &
-             ano_coleta<="2010") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(escherichia_coli, 
-            na.rm = TRUE),
-      q1 = 
-        quantile(escherichia_coli, 0.25, 
-                 na.rm = TRUE),
-      median = 
-        median(escherichia_coli, 
-               na.rm = TRUE),
-      mean = 
-        mean(escherichia_coli, 
-             na.rm= TRUE),
-      q3 = 
-        quantile(escherichia_coli, 0.75, 
-                 na.rm = TRUE),
-      max = 
-        max(escherichia_coli, 
-            na.rm = TRUE))
-)
+sum_ecoli_p2 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2000-2010"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("escherichia_coli"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 
-(sum_ecoli_p3 <- plan_wide_19902020 %>%
-    select(codigo, escherichia_coli, ano_coleta) %>% 
-    filter(ano_coleta>"2010" &
-             ano_coleta<="2020") %>% 
-    group_by(codigo) %>% 
-    summarize(
-      min = 
-        min(escherichia_coli, 
-            na.rm = TRUE),
-      q1 = 
-        quantile(escherichia_coli, 0.25, 
-                 na.rm = TRUE),
-      median = 
-        median(escherichia_coli, 
-               na.rm = TRUE),
-      mean = 
-        mean(escherichia_coli, 
-             na.rm= TRUE),
-      q3 = 
-        quantile(escherichia_coli, 0.75, 
-                 na.rm = TRUE),
-      max = 
-        max(escherichia_coli, 
-            na.rm = TRUE))
-)
+sum_ecoli_p3 <- ExpCustomStat(
+  plan_wide_19902020 %>% 
+    filter(
+      periodo == "2010-2020"
+    ), 
+  Cvar = c("ponto_monitoramento"), 
+  Nvar = c("escherichia_coli"),
+  stat = c('max', 'p0.95', 'p0.8', 'median', 'mean', 'p0.2', 'p0.05', 'min', "count"), 
+  gpby = TRUE) %>% 
+  arrange(ponto_monitoramento) %>% 
+  select(-Attribute) %>% 
+  pivot_longer(
+    !ponto_monitoramento,
+    names_to = "par",
+    values_to = "valor"
+  ) %>% 
+  pivot_wider(names_from = ponto_monitoramento,
+              values_from = valor)
 ```
 
 ```{r Salvando ecoli, warning=FALSE, message = FALSE,}
@@ -2571,130 +3120,17 @@ ggsave("ecoli_p3.png",
 ```
 
 ```{r Gráfico Nitrogênio line, warning = FALSE, message = FALSE}
-periodo_inicial <- as.Date("1990-01-01", "%Y-%m-%d")
-periodo_final <- as.Date("2021-01-01",  "%Y-%m-%d")
-
-(nitro_line <- 
-  plan_wide_19902020 %>%
-  filter(ano_coleta > "1990" &
-           ano_coleta <= "2020") %>%
-  dplyr::select(codigo, nitrogenio_amoniacal, data_coleta, periodo) %>%
-  # group_by(codigo) %>%
-  mutate(
-    ponto_monitoramento = case_when(
-      codigo == "87398500" ~ "PM1",
-      codigo == "87398980" ~ "PM2",
-      codigo == "87398900" ~ "PM3",
-      codigo == "87398950" ~ "PM4",
-      codigo == "87405500" ~ "PM5",
-      codigo == "87406900" ~ "PM6",
-      codigo == "87409900" ~ "PM7"
-    )
-  ) %>% 
-    # pivot_wider(
-    #   names_from = codigo,
-    #   values_from = nitro_amon,
-    #   id_cols = data_coleta
-    # ) %>% 
-    ggplot(
-      aes(x = data_coleta,
-          y = nitrogenio_amoniacal,
-          # color = codigo
-      ))+
-    # geom_rect(
-    #   aes(xmin = periodo_inicial, 
-    #       xmax = periodo_final,
-    #       ymin = 13.3, 
-    #       ymax = Inf,
-    #       alpha= 0.005,
-    #       fill= "#ac5079"),
-    # show.legend = FALSE)+ #>pior classe
-    # geom_rect(
-    #   aes(xmin = periodo_inicial, 
-    #       xmax = periodo_final,
-  #       ymin= 3.7,
-  #       ymax= 13.3,
-  #       alpha= 0.005,
-  #       fill= "#fcf7ab"),
-  #    show.legend = FALSE)+ #classe 3
-  # geom_rect(
-  #   aes(xmin = periodo_inicial, 
-  #       xmax = periodo_final,
-  #       ymin= 0,
-  #       ymax= 3.7,
-  #       alpha= 0.005,
-  #       fill= "blue"
-  #         # "#8dcdeb"
-  #         ),
-  #    show.legend = FALSE)+ #classe 1
-  annotate("rect",
-           xmin= periodo_inicial,
-           xmax= periodo_final,
-           ymin=13.3,
-           ymax=Inf,
-           alpha= 0.7,
-           fill="#ac5079")+ #>pior classe
-    annotate("rect",
-             xmin= periodo_inicial,
-             xmax= periodo_final,
-             ymin=3.7,
-             ymax=13.3,
-             alpha= 0.7,
-             fill="#fcf7ab")+ #classe 3
-    annotate("rect",
-             xmin= periodo_inicial,
-             xmax= periodo_final,
-             ymin= -Inf,
-             ymax=3.7,
-             alpha= 0.7,
-             fill="#8dcdeb")+ #classe 1
-    geom_line(
-      # aes(color = codigo),
-      na.rm = TRUE)+
-    geom_point(
-      # aes(color = codigo),
-      na.rm = TRUE)+
-    scale_x_date(
-      limits = as.Date(c(
-        "1990-01-01", 
-        "2021-01-01"
-        # NA #pode usar NA também
-      )),
-      expand = c(0.0, 0.0),
-      date_breaks = "10 years",
-      minor_breaks = "5 years",
-      date_labels = "%Y",
-    )+
-    # geom_smooth(
-    #   # aes(color = codigo),
-    #   method = "lm",
-    #   # formula = y ~ poly(x, 2),
-    #   # span = 0.2,
-    #   se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
-    #   aes(group = 1),
-    #   alpha =.5,
-    #   na.rm = TRUE,
-    #   linewidth = 0.3,
-    #   # fullrange = TRUE,
-  #   # show.legend = TRUE
-  # )+
-  # stat_smooth(
-  #   geom = "smooth",
-  #   # span = 0.2,
-  #   se = FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-  #   # aes(group = 1),
-  #   # alpha =.5,
-  #   na.rm = TRUE,
-  #   # linewidth = 0.3,
-  #   fullrange = TRUE,
-  #   show.legend = TRUE
-  # )+
-  facet_wrap(
-    ~ponto_monitoramento,
-    nrow = 4,
-  )+
-    theme_bw()
-)
+(nitro_overtime <- ts_nitro()+
+  scale_y_continuous(
+    expand = expansion(mult = c(0.0, 0.0)),
+    n.breaks = 6,
+    limits = c(min(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE)/3,
+               max(plan_wide_19902020$nitrogenio_amoniacal, na.rm = TRUE)*5),
+    trans = "log10",
+    labels = scales::number_format(accuracy = .001,
+                                   decimal.mark = ",",
+                                   big.mark = " "))
+ )
 ```
 
 ```{r Gráfico Nitrogênio total periodo1, warning = FALSE, message = FALSE}
@@ -2851,63 +3287,19 @@ ggsave("namon_p3.png",
 ```
 
 ```{r Gráfico Turbidez line, warning = FALSE, message = FALSE}
-(turb_line <- plan_wide_19902020 %>%
-   filter(ano_coleta > "1990" &
-            ano_coleta <= "2020") %>%
-   select(codigo, turbidez, data_coleta, periodo) %>%
-  group_by(codigo) %>%
-  ggplot(
-    aes(x = data_coleta,
-        y = turbidez,
-        color = codigo
-    ))+
-    geom_line(
-      # aes(color = codigo),
-      na.rm = TRUE)+
-    geom_point(
-      # aes(color = codigo),
-      na.rm = TRUE)+
-    scale_x_date(
-      limits = as.Date(c(
-        "1990-01-01", 
-        "2021-01-01"
-        # NA #pode usar NA também
-      )),
-      expand = c(0.0, 0.0),
-      date_breaks = "10 years",
-      minor_breaks = "5 years",
-      date_labels = "%Y",
-    )+
-  # geom_smooth(
-  #   # aes(color = codigo),
-  #   method = "lm",
-  #   # formula = y ~ poly(x, 2),
-  #   # span = 0.2,
-  #   se = TRUE, #se deixar TRUE gera o intervalo de confiança de 95%
-  #   aes(group = 1),
-  #   alpha =.5,
-  #   na.rm = TRUE,
-  #   linewidth = 0.3,
-  #   # fullrange = TRUE,
-  #   # show.legend = TRUE
-  # )+
-  # stat_smooth(
-  #   geom = "smooth",
-  #   # span = 0.2,
-  #   se = FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-  #   # aes(group = 1),
-  #   # alpha =.5,
-  #   na.rm = TRUE,
-  #   # linewidth = 0.3,
-  #   fullrange = TRUE,
-  #   show.legend = TRUE
-  # )+
-  facet_wrap(
-    ~codigo,
-    nrow = 4,
-  )+
-  theme_bw()
-)
+turb_overview <- ts_turbidez()+
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
+                     n.breaks = 8,
+                     limits = c(
+                       # 1,
+                       min(plan_wide_19902020$turbidez, na.rm = TRUE),
+                       # 500
+                       max(plan_wide_19902020$turbidez, na.rm = TRUE)
+                     ),
+                     trans = "log10",
+                     labels = scales::number_format(accuracy = 1,
+                                                    decimal.mark = ",",
+                                                    big.mark = " "))
 ```
 
 ```{r Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
@@ -3026,6 +3418,15 @@ ggsave("turb.png",
        width = 4500,
        height = 2993,
        plot = turb,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("turb_overview.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = turb_overview,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -4246,28 +4647,107 @@ eda_all_time <- plan_wide_19902020 %>%
   )
 ```
 
+# Mapa interativo
+
+```{r base_mapa_interativo}
+mapa_interativo <- plan_wide_19902020 %>% 
+  leaflet() %>% 
+  setView(
+    lat = -30,
+    lng = -50.9,
+    zoom = 10
+  ) %>%
+  addSimpleGraticule(
+    interval = 5,
+    showOriginLabel = FALSE,
+  ) %>% 
+   addProviderTiles(
+    # "Esri.WorldImagery" #Imagem de satélite
+    "OpenStreetMap.Mapnik" #OpenStreetMap -> Software livre
+  ) %>% 
+  # addPolygons(
+  #   data = lim_mun_RJ,
+  #   color = "red",
+  #   fill = FALSE,
+  #   weight = 2.5,
+  #   opacity = 1,
+  # ) %>% 
+  addScaleBar(
+    # map,
+    position = "bottomright",
+    options = scaleBarOptions(
+      maxWidth = 150,
+      metric = TRUE,
+      imperial = FALSE,
+      updateWhenIdle = TRUE
+    )
+  )
+```
+
+## mapa com as estações de monitoramento ao longo da bacia
+
+```{r mapa_estações}
+mapa_interativo %>%
+  addCircleMarkers(
+    data = plan_wide_19902020,
+    lng = ~longitude,
+    lat = ~latitude,
+    radius = 4,
+    fillOpacity = 0.6,
+    color = "blue",
+    popup = ~paste0(
+      "<b>Ponto de monitoramento: </b>", {ponto_monitoramento}, "<br>",
+      "<b>Código: </b>", codigo, "<br>",
+      "<b>Endereço: </b>", {endereco}, "<br>",
+      "<b>Município: </b>", municipio, "<br>",
+      "<b>Recurso hídrico: </b>", recurso_hidrico, "<br>",
+      "<b>Altitude: </b>", altitude, "<br>",
+      "<b>Última coleta: </b>", tail(data_coleta, 1), "<br>",
+      sep = " "
+    )
+  )
+```
+
 # Textando o texto
 
 -   § falar do comportamento geral dos dados
 -   2º § - xº § -\> abordar os principais parâmetros que estão sendo impactados, detalhando, nas estações mais relevantes, como ficaram os quartis/mediana etc.
 
-`r sum_od_p1$PM1[1]`
-
 <!--# ainda falta ajustar a formatação das casas decimais. talvez fazer um =left() e =right(), que nem no excel -->
+
+## comportamento geral dos dados
 
 Dentre os parâmetros selecionados para a análise, todos, com exceção ao nitrogênio amoniacal, possuíram mais que 85% das amostras com valores medidos. O nitrogênio amoniacal teve `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[4] %>% pluck(1) %>% percent()` dos valores medidos com `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[3] %>% pluck(1)` dados faltantes, dos 1.179 totais. A temperatura da água foi o parâmetro mais completo, com `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[4] %>% pluck(1) %>% percent()` das medições e apenas `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[3] %>% pluck(1)` dados faltantes.
 
+De modo geral, as estações de monitoramento apresentaram comportamentos similares em dois grupos: o primeiro dos pontos PM1, PM2, PM3 e PM4 e o segundo grupo dos pontos PM5, PM6 e PM7. Podemos distingir, visualmente, através dos gráficos, dois agrupamentos, ou *clusters*. Isso ocorre devido a localização dessas estações. Os pontos PM1, PM2 estão situadas no trecho do Alto Gravataí, o PM3 no Médio Gravataí e, por fim, o PM4, já no Baixo Gravataí. Esse primeiro *cluster* recebe contribuição semelhante: lavouras (de arroz), campos e área de banhado. Embora o PM4 esteja dentro do perímetro do Baixo Gravataí, ele recebe, comparativamente às estações à jusante, menos contribuição antrópica. Os pontos PM5, PM6 e PM7, por outro lado, estão situados no trecho mais populosamente denso da bacia.
+
 Os resultados apontam que há uma queda na qualidade da água no sentido montante-jusante para os parâmetros OD, DBO, Fósforo total, Nitrogênio amoniacal e condutividade elétrica. A *E. coli* teve, durante a primeira década, melhora da qualidade ao longo do rio, contudo, houve uma reversão na tendência para os dois períodos subsequentes.
+
+## principais parâmetros impactados
 
 A turbidez registrou, ao sumarizar a série por período, valores médios de `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[1,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")`, `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[2,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")` e `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[3,6] %>% pluck(1) %>% formatC(digits = 3, format = "f")` UNT, respectivamente.
 
+No parâmetro OD, quanto maior o valor medido, melhor. Valores acima de 2 mg/L são essenciais à sobrevivência não só de peixes, como também de outros organismos aquáticos. No período 1990-2000, as medianas dos pontos PM1, PM2, PM3 foram maiores que 6 mg/L, dentro do intervalo da Classe 1.
+
+O parâmetro OD teve todos os valores máximos e P95 dentro do limite da Classe 1, com exceção apenas dos PM5, PM6 e PM7 no período 2010-2020, cujos valores estiveram dentro do limite da Classe 2.
+
+Pela característica do parâmetro OD ser diferente dos demais,
 
 # Discussão
 
-A redução dos valores de turbidez no período 2010-2020 ocorreu por conta de ações tomadas pelo setor público: Fepam, Brigada ambiental. [^1]
+O ano de 2007 foi marcado por uma forte estiagem. [^1]: [Link](http://www.fepam.rs.gov.br/qualidade/qualidade_gravatai/gravatai.asp) A redução dos valores de turbidez no período 2010-2020 ocorreu por conta de ações tomadas pelo setor público: Fepam, Brigada ambiental. [^2]
 
-[^1]: Inserir referência.
+[^1]: [Link](https://metsul.com/estiagem-completa-200-dias-e-atinge-niveis-historicos-para-maio/)
 
+[^2]: Inserir referência.
+
+## Estiagem
+
+Segundo dados do metsul [^3], os anos de 1991, 1995, 1996, 1997, 2000, 2001 e 2011 foram marcados pela estiagem. O ano de 2022 teve a pior seca dos últimos 18 anos [\^4]
+
+[^3]: [Link2](https://www.brasildefato.com.br/2022/01/07/rio-grande-do-sul-tem-a-pior-seca-dos-ultimos-17-anos-e-perdas-chegam-a-r-20-bilhoes)
+
+Dessa forma, é imprescindível que o Estado promova ações para aumentar o tempo de permanência da água nos rios. 
 # Gráficos exemplos boxplot
 
 ```{r elementos do boxplot}
