@@ -81,8 +81,25 @@ Some features that I want to add:
 
 ## acessar os pacotes
 
-```{r setup1, echo = FALSE}
+```{r cronometrando quanto tempo cada chunk leva, setup, include=FALSE, echo=FALSE}
 R_LIBS_SITE="E:\\Documents\\R\\R-4.2.2\\library"
+
+knitr::knit_hooks$set(time_it = local({
+   now <- NULL
+   function(before, options) {
+      if (before) {
+         # record the current time before each chunk
+         now <<- Sys.time()
+      } else {
+         # calculate the time difference after a chunk
+         res <- difftime(Sys.time(), now)
+         # return a character string to show the time
+         paste("Tempo para esse code chunk ser rodado:", round(res, digits = 2), "s")
+      }
+   }
+}))
+
+knitr::opts_chunk$set(time_it = TRUE)
 ```
 
 ```{r Acessar os pacotes, message = FALSE, warning = TRUE}
@@ -113,29 +130,6 @@ pacman::p_load(
   )
 # pacman::p_load(tibbletime)
 # cite_packages()
-```
-
-```{r cronometrando quanto tempo cada chunk leva}
-knitr::knit_hooks$set(time_it = local({
-   now <- NULL
-   function(before, options) {
-      if (before) {
-         # record the current time before each chunk
-         now <<- Sys.time()
-      } else {
-         # calculate the time difference after a chunk
-         res <- difftime(Sys.time(), now)
-         # return a character string to show the time
-         paste("Tempo para esse code chunk ser rodado:", round(res, digits = 2), "s")
-      }
-   }
-}))
-
-knitr::opts_chunk$set(time_it = TRUE)
-```
-
-```{r setup, include=FALSE}
-# knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### referenciando os pacotes
@@ -4259,17 +4253,20 @@ eda_all_time <- plan_wide_19902020 %>%
 
 `r sum_od_p1$PM1[1]`
 
+<!--# ainda falta ajustar a formatação das casas decimais. talvez fazer um =left() e =right(), que nem no excel -->
+
 Dentre os parâmetros selecionados para a análise, todos, com exceção ao nitrogênio amoniacal, possuíram mais que 85% das amostras com valores medidos. O nitrogênio amoniacal teve `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[4] %>% pluck(1) %>% percent()` dos valores medidos com `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[3] %>% pluck(1)` dados faltantes, dos 1.179 totais. A temperatura da água foi o parâmetro mais completo, com `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[4] %>% pluck(1) %>% percent()` das medições e apenas `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[3] %>% pluck(1)` dados faltantes.
 
 Os resultados apontam que há uma queda na qualidade da água no sentido montante-jusante para os parâmetros OD, DBO, Fósforo total, Nitrogênio amoniacal e condutividade elétrica. A *E. coli* teve, durante a primeira década, melhora da qualidade ao longo do rio, contudo, houve uma reversão na tendência para os dois períodos subsequentes.
 
 A turbidez registrou, ao sumarizar a série por período, valores médios de `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[1,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")`, `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[2,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")` e `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[3,6] %>% pluck(1) %>% formatC(digits = 3, format = "f")` UNT, respectivamente.
 
+
 # Discussão
+
 A redução dos valores de turbidez no período 2010-2020 ocorreu por conta de ações tomadas pelo setor público: Fepam, Brigada ambiental. [^1]
 
 [^1]: Inserir referência.
-
 
 # Gráficos exemplos boxplot
 
