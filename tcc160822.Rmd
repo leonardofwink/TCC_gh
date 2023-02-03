@@ -131,7 +131,13 @@ pacman::p_load(
   formattable,
   
   # Mapas
-  leaflet
+  leaflet,
+  sf, raster,
+  # leaflet, leaflet.extras,
+  # rgdal, rgeos,
+  # maps,
+  # mapview,
+  # ggmap
   )
 # pacman::p_load(tibbletime)
 # cite_packages()
@@ -1215,26 +1221,6 @@ ts_ecoli <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = 
                            b = 5, t = 5)
     )
 }
-
-boxplot_ecoli()+
-  facet_wrap(~periodo)
-
-ts_ecoli()+
-  geom_vline(
-     xintercept = as.Date(c("2007-01-01"), "%Y-%m-%d"),
-     color = "red",
-     linetype = "dashed",
-  )+
-  scale_y_log10(
-      breaks = trans_breaks("log10", function(x) 10^x),
-      labels = trans_format("log10", math_format(10^.x)),
-      expand = expansion(mult = c(0.05, 0.25)),
-      n.breaks = 9,
-    )
-    # annotation_logticks(sides = "l",
-    #                     size = 0.01,
-    #                     outside = TRUE)+
-    # coord_cartesian(clip = "off")
 ```
 
 ## Nitrogênio Amoniacal
@@ -1470,20 +1456,20 @@ boxplot_turb <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = t
    labs(title = titulo,
         x="Estação",
         y="UNT")+
-   scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
-                      n.breaks = 8,
-                      limits = c(
-                        # 1,
-                        min(plan_wide_19902020$turbidez, na.rm = TRUE),
-                        # 500
-                        max(plan_wide_19902020$turbidez, na.rm = TRUE)
-                      ),
-                      trans = "log10",
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
+                       n.breaks = 8,
+                       limits = c(
+                         # 1,
+                         min(plan_wide_19902020$turbidez, na.rm = TRUE),
+                         # 500
+                         max(plan_wide_19902020$turbidez, na.rm = TRUE)
+                       ),
+                       trans = "log10",
+                       labels = scales::number_format(accuracy = 1,
+                                                      decimal.mark = ",",
+                                                      big.mark = " "))+
     ggbeeswarm::geom_quasirandom(
-     size = 1.2,
+      size = 1.2,
      alpha = .25,
      width = .07,
    )+
@@ -1656,20 +1642,21 @@ boxplot_pH <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = pH,
     )+
     labs(
       title = titulo,
-      x= NULL,
-      y="mg/L"
+      x = NULL,
+      y = NULL,
     )+
     ggbeeswarm::geom_quasirandom(
       size = 1.2,
       alpha = .25,
       width = .07,
     )+
-    scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                      n.breaks = 8,
-                      limits = c(4,11),
-                      labels = scales::number_format(accuracy = 1,
-                                                     decimal.mark = ",",
-                                                     big.mark = " "))+
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
+                       # n.breaks = 5,
+                       breaks = c(4.5, 6, 7.5, 9, 10.5),
+                       limits = c(4.5, 10.5),
+                       labels = scales::number_format(accuracy = .1,
+                                                      decimal.mark = ",",
+                                                      big.mark = " "))+
     scale_x_discrete(limits = c("87398500",
                                 "87398980",
                                 "87398900",
@@ -1688,6 +1675,114 @@ boxplot_pH <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_y = pH,
       size = 1
     )+
     theme_grafs()
+}
+```
+
+```{r gerando function ts_pH, echo = TRUE}
+ts_pH <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = pH, titulo = "pH"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, pH, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = -Inf, ymax = 6,
+             alpha = 1,
+             fill="#eb5661")+ #classe 4
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 9, ymax = Inf,
+             alpha = 1,
+             fill="#eb5661")+ #classe 4
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 6, ymax = 9,
+             alpha = 1,
+             fill="#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y = NULL,
+    )+
+    geom_vline(
+      xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
 }
 ```
 
@@ -1758,6 +1853,109 @@ boxplot_solidos_totais <- function(dados = plan_wide_19902020, eixo_x = codigo, 
                na.rm = TRUE,
                size = 1)+
    theme_grafs()
+}
+```
+
+```{r gerando function ts_soltot, echo = TRUE}
+ts_solidos_totais <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = solidos_totais, titulo = "Sólidos totais"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, solidos_totais, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+       annotate("rect",
+            xmin = periodo_inicial, xmax = periodo_final,
+            ymin = 500, ymax = Inf,
+            alpha = 1,
+            fill = "#ac5079")+ #>pior classe
+   annotate("rect",
+            xmin = periodo_inicial, xmax = periodo_final,
+            ymin = 0, ymax = 500,
+            alpha = 1,
+            fill = "#8dcdeb")+ #classe 1
+    labs(
+      title = titulo,
+      x = NULL,
+      y = NULL,
+    )+
+    geom_vline(
+      xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+     color = "grey25",
+     linetype = "dashed",
+   )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
 }
 ```
 
@@ -1832,6 +2030,107 @@ boxplot_cond_elet <- function(dados = plan_wide_19902020, eixo_x = codigo, eixo_
                na.rm = TRUE,
                size = 1)+
    theme_grafs()
+}
+```
+
+```{r gerando function ts_condutividade, echo = TRUE}
+ts_condutividade <- function(dados = plan_wide_19902020, eixo_x = data_coleta, eixo_y = condutividade, titulo = "Condutividade elétrica"){
+  dados %>%
+    dplyr::filter(
+      periodo == "1990-2000" | 
+        periodo == "2000-2010" | 
+        periodo == "2010-2020"
+    ) %>%
+    dplyr::select(ponto_monitoramento, condutividade, data_coleta, periodo) %>%
+    ggplot2::ggplot(
+      data = .,
+      aes(
+        x = {{eixo_x}},
+        y = {{eixo_y}}
+      )
+    )+
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 500, ymax = Inf,
+             alpha = 1,
+             fill="#eb5661")+ #classe 4
+    annotate("rect",
+             xmin = periodo_inicial, xmax = periodo_final,
+             ymin = 0, ymax = 500,
+             alpha = 1,
+             fill="#8dcdeb")+ #classe 1
+    labs(title = titulo,
+        x=NULL,
+        y="µmhos/cm")+
+    geom_vline(
+      xintercept = as.Date(c("2010-01-01", "2000-01-01"), "%Y-%m-%d"),
+      color = "grey25",
+      linetype = "dashed",
+    )+
+    geom_line(
+      linewidth = 0.05,
+      linetype = 9,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    geom_point(
+      size = 1,
+      # aes(color = codigo),
+      na.rm = TRUE
+    )+
+    scale_x_date(
+      limits = as.Date(c(
+        "1990-01-01", 
+        "2021-01-01"
+        # NA #pode usar NA também
+      )),
+      expand = c(0.0, 0.0),
+      date_breaks = "5 years",
+      minor_breaks = "1 year",
+      date_labels = "%Y",
+    )+
+    facet_wrap(
+      ~ponto_monitoramento,
+      nrow = 4,
+    )+
+    theme_bw()+
+    theme(
+      plot.title = 
+        element_text(
+          hjust = 0.5,
+          color = "black",
+          size = 17),
+      
+      axis.title.x =
+        element_text(
+          color = "black",
+          size = 15,
+          angle = 0,),
+      # element_blank(),
+      axis.title.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 90),
+      axis.text.x = element_text(
+        color = "black",
+        size = 13,
+        angle = 0),
+      axis.text.y = element_text(
+        color = "black",
+        size = 15,
+        angle = 0),
+      
+      strip.background = element_rect(fill = "white",
+                                      linetype = 1,
+                                      size = 0.5,
+                                      color = "black"),
+      strip.text = element_text(size = 14),
+      # panel.background = element_rect(fill = "white"),
+      panel.spacing.x = unit(1, "lines"),
+      
+      plot.margin = margin(l = 5, r = 10,
+                           b = 5, t = 5)
+    )
 }
 ```
 
@@ -2179,7 +2478,7 @@ ggsave("od_p3.png",
 )
 ```
 
-```{r Sumário OD, echo = FALSE, warning=FALSE, message = FALSE,}
+```{r Sumário OD, echo = TRUE, warning=FALSE, message = FALSE,}
 # (sum_od_p1 <- plan_wide_19902020 %>%
 #     select(ponto_monitoramento, oxigenio_dissolvido, ano_coleta) %>% 
 #     filter(ano_coleta > "1990" &
@@ -3022,6 +3321,27 @@ ggsave("ptot_p3.png",
 )
 ```
 
+```{r gráfico time-series ecoli, echo=TRUE, warning=FALSE, message=FALSE}
+(ecoli_overview <- ts_ecoli()+
+  # geom_vline(
+  #    xintercept = as.Date(c("2002-01-01", "2003-01-01"), "%Y-%m-%d"),
+  #    color = "red",
+  #    linetype = "dashed",
+  # )+
+  scale_y_log10(
+      breaks = trans_breaks("log10", function(x) 10^x),
+      labels = trans_format("log10", math_format(10^.x)),
+      expand = expansion(mult = c(0.05, 0.25)),
+      n.breaks = 9,
+    )+
+   geom_smooth(
+     method = "lm",
+     se = FALSE,
+     linewidth = 0.7,
+   )
+ )
+```
+
 ```{r Sumário Ecoli, warning=FALSE, message = FALSE,}
 sum_ecoli_p1 <- ExpCustomStat(
   plan_wide_19902020 %>% 
@@ -3084,6 +3404,12 @@ sum_ecoli_p3 <- ExpCustomStat(
 ```{r Salvando ecoli, warning=FALSE, message = FALSE,}
 ggsave("ecoli.png",
        plot = ecoli,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("ecoli_overview.png",
+       plot = ecoli_overview,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -3287,9 +3613,9 @@ ggsave("namon_p3.png",
 ```
 
 ```{r Gráfico Turbidez line, warning = FALSE, message = FALSE}
-turb_overview <- ts_turbidez()+
+(turb_overview <- ts_turbidez()+
   scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
-                     n.breaks = 8,
+                     breaks = c(5, 10, 50, 100, 500),
                      limits = c(
                        # 1,
                        min(plan_wide_19902020$turbidez, na.rm = TRUE),
@@ -3300,6 +3626,7 @@ turb_overview <- ts_turbidez()+
                      labels = scales::number_format(accuracy = 1,
                                                     decimal.mark = ",",
                                                     big.mark = " "))
+ )
 ```
 
 ```{r Gráfico Turbidez periodo1, warning = FALSE, message = FALSE}
@@ -3490,6 +3817,16 @@ ggsave("turb_p3.png",
  )
 ```
 
+```{r Gráfico pH line, warning = FALSE, message = FALSE}
+pH_overview <- ts_pH()+
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
+                     breaks = c(4.5, 6, 7.5, 9, 10.5),
+                     limits = c(4.5, 10.5),
+                     labels = scales::number_format(accuracy = .1,
+                                                    decimal.mark = ",",
+                                                    big.mark = " "))
+```
+
 ```{r Sumário pH, warning=FALSE, message = FALSE,}
 (sum_pH_p1 <- plan_wide_19902020 %>%
    select(codigo, pH, ano_coleta) %>% 
@@ -3640,6 +3977,19 @@ ggsave("pH_p3.png",
 )
 ```
 
+```{r Gráfico SólTot line, warning = FALSE, message = FALSE}
+(solidos_totais_overview <- ts_solidos_totais()+
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)),
+                     breaks = c(10, 50, 100, 500),
+                     limits = c(min(plan_wide_19902020$solidos_totais, na.rm = TRUE),
+                                max(plan_wide_19902020$solidos_totais, na.rm = TRUE)),
+                     labels = scales::number_format(accuracy = 1,
+                                                    decimal.mark = ",",
+                                                    big.mark = " "),
+                     trans = "log10")
+ )
+```
+
 ```{r Sumário Sólidos Totais, warning=FALSE, message = FALSE,}
 (sum_SolTot_p1 <- plan_wide_19902020 %>%
    select(codigo, solidos_totais, ano_coleta) %>% 
@@ -3730,6 +4080,15 @@ ggsave("SolTot.png",
        dpi = 300,
        type = "cairo")
 
+ggsave("solidos_totais_overview.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = solidos_totais_overview,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
 ggsave("SolTot_p1.png",
        plot = SolTot_p1,
        path = "./graficos",
@@ -3788,6 +4147,24 @@ ggsave("SolTot_p3.png",
      titulo = "Condutividade elétrica no período 2010-2020"
    )
 )
+```
+
+```{r Gráfico cond_elet line, warning = FALSE, message = FALSE}
+(condutividade_overview <- ts_condutividade()+
+  scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
+                     # n.breaks = 8,
+                     limits = c(
+                       # min(plan_wide_19902020$condutividade, na.rm = TRUE),
+                       5,
+                       1000
+                       # max(plan_wide_19902020$condutividade, na.rm = TRUE)
+                     ),
+                     breaks = c(10, 50, 100, 500, 1000),
+                     labels = scales::number_format(accuracy = 1,
+                                                    decimal.mark = ",",
+                                                    big.mark = " "),
+                     trans = "log10")
+ )
 ```
 
 ```{r Sumário cond_elet, warning=FALSE, message = FALSE}
@@ -3901,6 +4278,15 @@ ggsave("cond_elet.png",
        width = 4500,
        height = 2993,
        plot = cond_elet,
+       path = "./graficos",
+       dpi = 300,
+       type = "cairo")
+
+ggsave("condutividade_overview.png",
+       units = c("px"),
+       width = 4500,
+       height = 2993,
+       plot = condutividade_overview,
        path = "./graficos",
        dpi = 300,
        type = "cairo")
@@ -4380,167 +4766,6 @@ ggsave("iqa_p3.png",
        type = "cairo")
 ```
 
-## Testando coisas
-
-```{r Testando coisas, include = FALSE, warning=FALSE, message = FALSE,}
-# plan_wide_19902020 %>% 
-#    select(codigo, oxigenio_dissolvido, ano_coleta) %>% 
-#    ggplot(aes(ano_coleta, oxigenio_dissolvido, 
-#       col = codigo))+
-#    geom_line()+
-#    facet_wrap(~ codigo, ncol = 7)
-
-# df111 <- data.frame(x = c(1:100))
-# glimpse(df111)
-# df111$y <- 2 + 3 * df111$x + rnorm(100, sd = 40)
-# 
-# lm_eqn <- function(df111){
-#     m <- lm(y ~ x, df111);
-#     eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
-#          list(a = format(unname(coef(m)[1]), digits = 2),
-#               b = format(unname(coef(m)[2]), digits = 2),
-#              r2 = format(summary(m)$r.squared, digits = 3)))
-#     as.character(as.expression(eq));
-# } 
-# p2 <- p111 +
-#   geom_text(x = 25, y = 300,
-#             label = lm_eqn(df111),
-#             parse = TRUE)
-# p2
-# 
-# 
-# lm_eqc <- function(plan_wide_19902020){
-#    m <- lm(oxigenio_dissolvido ~ codigo, plan_wide_19902020);
-#    eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2,
-#                     list(a = format(unname(coef(m)[1]), digits = 2),
-#                          b = format(unname(coef(m)[2]), digits = 2),
-#                          r2 = format(summary(m)$r.squared, digits = 3)))
-#    as.character(as.expression(eq));
-# }
-# 
-# (od_p1 <-ggplot(plan_wide_19902020 %>%
-#                    filter(ano_coleta>"1990" &
-#                              ano_coleta<="2000"),
-#                 aes(codigo,
-#                     oxigenio_dissolvido))+
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=-Inf,
-#                ymax=2,
-#                alpha=1,
-#                fill="#ac5079")+ #>pior classe
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=2,
-#                ymax=4,
-#                alpha=1,
-#                fill="#eb5661")+ #classe 4
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=4,
-#                ymax=5,
-#                alpha=1,
-#                fill="#fcf7ab")+ #classe 3
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=5,
-#                ymax=6,
-#                alpha=1,
-#                fill="#70c18c")+ #classe 2
-#       annotate("rect",
-#                xmin=-Inf,
-#                xmax=Inf,
-#                ymin=6,
-#                ymax=Inf,
-#                alpha=1,
-#                fill="#8dcdeb")+ #classe 1
-#       stat_boxplot(geom = 'errorbar',
-#                    width=0.3,
-#                    position = position_dodge(width = 0.65))+
-#       geom_boxplot(fill='#F8F8FF',
-#                    color="black",
-#                    outlier.shape = NA, #se deixar NA fica só o jitter, se não, deixa 1
-#                    width= 0.7)+
-#       labs(title = "Oxigênio Dissolvido no período 1990-2000",
-#            x="Estação",
-#            y="mg/L")+
-#       # geom_jitter(width = .05,
-#       #             alpha=.2,
-#       #             size=1.5,
-#       #             color="black")+
-#       scale_y_continuous(expand = expansion(mult = c(0,0)),
-#                          n.breaks = 11,
-#                          limits = c(-1,21))+
-#       scale_x_discrete(limits = c("87398500", "87398980", "87398900", "87398950", "87405500", "87406900", "87409900"))+
-#       geom_smooth(method = "lm",
-#                   se=FALSE, #se deixar TRUE gera o intervalo de confiança de 95%
-#                   aes(group=1),
-#                   alpha=.5,
-#                   na.rm = TRUE,
-#                   linewidth = 1)+
-#       # annotate(geom_text(aes(x = "87405500", y = 15),
-#       #                    label = lm_eqc(plan_wide_19902020),
-#       #                    parse = TRUE,
-#       #                    inherit.aes = TRUE,
-#       #                    check_overlap = TRUE))+
-#       #  geom_line(
-#       #     aes(color="red"),
-#       #     alpha=.0,
-#       # )+
-#       # scale_color_manual("Legenda",
-#       #                    guide="legend",
-#       #                    values = c("Classe 1"="#8dcdeb",
-#       #                               "Classe 2"="#70c18c",
-#       #                               "Classe 3"="#fcf7ab",
-#       #                               "Classe 4"="#eb5661",
-#       #                               "Pior Classe"="#ac5079"))+
-#    # guides(color=guide_legend(override.aes = list(linetype=c(1,1,1,1,1),
-#    #                                               lwd=c(2,2,2,2,2),
-#    #                                               shape=c(NA,NA,NA,NA,NA),
-#    #                                               alpha=1)))+
-#       theme(legend.position = "bottom")+
-#       theme_classic())
-
-# list1111 <- sessionInfo()
-# list1111$loadedOnly
-
-# install.packages("ggpmisc")
-# library(ggpmisc)
-
-# summary(lm(plan_wide_19902020$codigo~plan_wide_19902020$dbo))
-# 
-# 
-# p <- ggplot(data, aes(y=number, x=pod)) +
-#   geom_boxplot()
-# print(p)
-
-# install.packages("GGally")
-
-
-# fit = lm(plan_wide_19902020$oxigenio_dissolvido~ plan_wide_19902020$codigo)
-# summary(fit)
-# summary.lm(fit)
-# 
-# pacman::p_load(esquisse)
-
-# sumario <- function(x, y){
-#   x %>% 
-#     group_by(codigo) %>%
-#     summarise(
-#       list(min= ~min(y, na.rm = TRUE), 
-#            Q1= ~quantile(y, probs = 0.25),
-#            median= ~median(y, na.rm = TRUE), 
-#            Q3= ~quantile(y, probs = 0.75),
-#            max= ~max(y, na.rm = TRUE)),
-#       .groups = "drop"
-#       )
-# }
-```
-
 ## Correlação
 
 ```{r Correlação, fig.cap="correlação-parametros-qualidade-agua-gravataí no período 1990-2020", time_it = TRUE, warning=FALSE, message = FALSE,}
@@ -4647,7 +4872,62 @@ eda_all_time <- plan_wide_19902020 %>%
   )
 ```
 
-# Mapa interativo
+# Mapas 
+## mapa balanço qualitativo-quantitativo ANA
+```{r}
+balanco_qualiquant <- st_read(
+  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/balanco_qualiquant_snirh.gpkg"
+)
+
+BH_gravatai <- shapefile(
+  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/Bacia_Hidrografica.shp"
+) %>% 
+  as("sf") %>% 
+  st_transform(crs = 4674) %>% #4326 = WGS84, 4674 = SIRGAS2000
+  filter(
+    nome == "Gravataí" 
+    # | nome == "Lago Guaíba"
+  )
+```
+
+```{r}
+st_crs(balanco_qualiquant) == st_crs(BH_gravatai)
+
+plot(BH_gravatai)
+plot(balanco_qualiquant)
+
+(cropped <- st_crop(
+  balanco_qualiquant$geom, BH_gravatai$geometry
+)
+)
+```
+
+
+```{r}
+balanco_qualiquant %>%
+  ggplot()+
+  geom_sf(
+    data = balanco_qualiquant
+  )+
+  labs(
+    title = "Balanço quali-quant",
+    x = "Longitude",
+    y = "Latitude",
+    caption = "Elaborado por: Leonardo Fernandes Wink\n03/02/2023"
+  )+ 
+  theme_bw()+
+  theme(
+    plot.title = element_text(
+        size = 16,
+        hjust = 0.5,
+        color = "black",
+        face = "bold"
+      ),
+  )
+```
+
+
+## Mapa interativo
 
 ```{r base_mapa_interativo}
 mapa_interativo <- plan_wide_19902020 %>% 
@@ -4708,7 +4988,7 @@ mapa_interativo %>%
   )
 ```
 
-# Textando o texto
+# Resultados
 
 -   § falar do comportamento geral dos dados
 -   2º § - xº § -\> abordar os principais parâmetros que estão sendo impactados, detalhando, nas estações mais relevantes, como ficaram os quartis/mediana etc.
@@ -4717,21 +4997,45 @@ mapa_interativo %>%
 
 ## comportamento geral dos dados
 
-Dentre os parâmetros selecionados para a análise, todos, com exceção ao nitrogênio amoniacal, possuíram mais que 85% das amostras com valores medidos. O nitrogênio amoniacal teve `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[4] %>% pluck(1) %>% percent()` dos valores medidos com `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[3] %>% pluck(1)` dados faltantes, dos 1.179 totais. A temperatura da água foi o parâmetro mais completo, com `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[4] %>% pluck(1) %>% percent()` das medições e apenas `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[3] %>% pluck(1)` dados faltantes.
+### Número de amostras/NAs
 
-De modo geral, as estações de monitoramento apresentaram comportamentos similares em dois grupos: o primeiro dos pontos PM1, PM2, PM3 e PM4 e o segundo grupo dos pontos PM5, PM6 e PM7. Podemos distingir, visualmente, através dos gráficos, dois agrupamentos, ou *clusters*. Isso ocorre devido a localização dessas estações. Os pontos PM1, PM2 estão situadas no trecho do Alto Gravataí, o PM3 no Médio Gravataí e, por fim, o PM4, já no Baixo Gravataí. Esse primeiro *cluster* recebe contribuição semelhante: lavouras (de arroz), campos e área de banhado. Embora o PM4 esteja dentro do perímetro do Baixo Gravataí, ele recebe, comparativamente às estações à jusante, menos contribuição antrópica. Os pontos PM5, PM6 e PM7, por outro lado, estão situados no trecho mais populosamente denso da bacia.
+Dentre os parâmetros selecionados para a análise, todos, com exceção ao nitrogênio amoniacal, possuíram mais que 85% dos valores medidos, das 1.179 amostras totais. O nitrogênio amoniacal teve `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[4] %>% pluck(1) %>% percent()` de registros com `r eda_all_time %>% filter(skim_variable == "nitrogenio_amoniacal") %>% .[3] %>% pluck(1)` dados faltantes. A temperatura da água foi o parâmetro mais completo, com `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[4] %>% pluck(1) %>% percent()` das medições e apenas `r eda_all_time %>% filter(skim_variable == "temperatura_agua") %>% .[3] %>% pluck(1)` dados faltantes.
+
+### boxplots
+
+> recapitulação de onde estão as estações
+
+De modo geral, as estações de monitoramento apresentaram comportamentos similares em dois grupos: o primeiro dos pontos PM1, PM2, PM3 e PM4 e o segundo grupo dos pontos PM5, PM6 e PM7. Podemos distingir, visualmente, através dos gráficos, esses agrupamentos, ou *clusters*. Isso ocorre devido a localização dessas estações. Os pontos PM1, PM2 estão situadas no trecho do Alto Gravataí, o PM3 no Médio Gravataí e, por fim, o PM4, já no Baixo Gravataí. Esse primeiro *cluster* recebe contribuição semelhante: lavouras (de arroz), campos e área de banhado. Embora o PM4 esteja dentro do perímetro do Baixo Gravataí, ele recebe, comparativamente às estações à jusante, menos contribuição antrópica. Os pontos PM5, PM6 e PM7, por outro lado, estão situados no trecho mais populosamente denso da bacia, o do Baixo Gravataí.
+
+#### Tendência montante-jusante
 
 Os resultados apontam que há uma queda na qualidade da água no sentido montante-jusante para os parâmetros OD, DBO, Fósforo total, Nitrogênio amoniacal e condutividade elétrica. A *E. coli* teve, durante a primeira década, melhora da qualidade ao longo do rio, contudo, houve uma reversão na tendência para os dois períodos subsequentes.
 
-## principais parâmetros impactados
+### graf over time
+
+### principais parâmetros impactados
+
+## parâmetro 1 - od
+
+No parâmetro OD, quanto maior o valor medido, melhor. Devido a essa característica, este é o único parâmetro em que a classe é definida pelo P20, e não pelo P80. Isto é, 
+
+Valores acima de 2 mg/L são essenciais à sobrevivência não só de peixes, como também de outros organismos aquáticos. O parâmetro OD teve todos os valores máximos e P95 dentro do limite da Classe 1, com exceção apenas dos PM5, PM6 e PM7, no período 2010-2020, cujos valores estiveram dentro do limite da Classe 2.
+
+No período 1990-2000, as medianas dos pontos PM1, PM2, PM3 foram maiores que 6 mg/L, dentro do intervalo da Classe 1.
+
+
+### boxplots 1
+
+#### tendencia mont-jus 1
+
+### graf overtime 1
+
+#### comportamento est est 1
+
+### quando foram os NAs 1
 
 A turbidez registrou, ao sumarizar a série por período, valores médios de `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[1,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")`, `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[2,6] %>% pluck(1) %>% formattable(digits = 3, format = "f")` e `r plan_wide_19902020 %>% group_by(periodo) %>% select(turbidez, periodo) %>% skim() %>% select(-numeric.hist) %>% .[3,6] %>% pluck(1) %>% formatC(digits = 3, format = "f")` UNT, respectivamente.
 
-No parâmetro OD, quanto maior o valor medido, melhor. Valores acima de 2 mg/L são essenciais à sobrevivência não só de peixes, como também de outros organismos aquáticos. No período 1990-2000, as medianas dos pontos PM1, PM2, PM3 foram maiores que 6 mg/L, dentro do intervalo da Classe 1.
-
-O parâmetro OD teve todos os valores máximos e P95 dentro do limite da Classe 1, com exceção apenas dos PM5, PM6 e PM7 no período 2010-2020, cujos valores estiveram dentro do limite da Classe 2.
-
-Pela característica do parâmetro OD ser diferente dos demais,
 
 # Discussão
 
@@ -4748,6 +5052,7 @@ Segundo dados do metsul [^3], os anos de 1991, 1995, 1996, 1997, 2000, 2001 e 20
 [^3]: [Link2](https://www.brasildefato.com.br/2022/01/07/rio-grande-do-sul-tem-a-pior-seca-dos-ultimos-17-anos-e-perdas-chegam-a-r-20-bilhoes)
 
 Dessa forma, é imprescindível que o Estado promova ações para aumentar o tempo de permanência da água nos rios. 
+
 # Gráficos exemplos boxplot
 
 ```{r elementos do boxplot}
