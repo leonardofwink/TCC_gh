@@ -4821,55 +4821,98 @@ RHG <- st_read(
 ) %>% 
   janitor::clean_names()
 
+RHG <- st_read(
+  "./info_geoespaciais/regiao_hidrografica_31982.gpkg"
+) %>% 
+  janitor::clean_names()
 
-municipios_RS <- read_municipality() %>% 
-  filter(abbrev_state == "RS") %>% 
-  as("sf") %>% 
-  filter(
-    name_muni == "Alvorada" |
-      name_muni == "Araricá" |
-      name_muni == "Balneário Pinhal" |
-      name_muni == "Barra do Ribeiro" |
-      name_muni == "Cachoeirinha" |
-      name_muni == "Canoas" |
-      name_muni == "Caraá" |
-      name_muni == "Campo Bom" |
-      name_muni == "Capela De Santana" |
-      name_muni == "Capão da Canoa" |
-      name_muni == "Capivari Do Sul" |
-      name_muni == "Charqueadas" |
-      name_muni == "Cidreira" |
-      name_muni == "Eldorado Do Sul" |
-      name_muni == "Esteio" |
-      name_muni == "Gravataí" |
-      name_muni == "Glorinha" |
-      name_muni == "Guaíba" |
-      name_muni == "Imbé" |
-      name_muni == "Lagoa Dos Patos" |
-      name_muni == "Montenegro" |
-      name_muni == "Maquiné" |
-      name_muni == "Nova Santa Rita" |
-      name_muni == "Novo Hamburgo" |
-      name_muni == "Osório" |
-      name_muni == "Palmares Do Sul" |
-      name_muni == "Parobé" |
-      name_muni == "Portão" |
-      name_muni == "Porto Alegre" |
-      name_muni == "Rolante" |
-      name_muni == "Santo Antônio Da Patrulha" |
-      name_muni == "São Leopoldo" |
-      name_muni == "Sapiranga" |
-      name_muni == "Sapucaia Do Sul" |
-      name_muni == "Taquara" |
-      name_muni == "Tramandaí" |
-      name_muni == "Triunfo" |
-      name_muni == "Xangri-Lá" |
-      name_muni == "Viamão"
+
+municipios_RS <- st_read(
+  "./info_geoespaciais/municipios_1-50000_31982.gpkg"
+) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    code_muni = geocodigo,
+    name_muni = nome,
+    code_state = str_sub(code_muni, 1, 2),
+    abbrev_state = "RS",
+    .before = 2,
+    # .after = code_muni
+    .keep = "unused"
+  ) %>% 
+  dplyr::select(
+    -d_geometri,
+    -ano_de_refer,
+    -nome_abrev
   ) %>%
-  st_transform(crs = 31982) #4326 = WGS84, 4674 = SIRGAS2000, 31982 = SIRGAS2000/UTM 22S
+#   rbind(
+#     .,
+#     read_municipality() %>%
+#           filter(abbrev_state == "RS") %>%
+#           as("sf") %>%
+#           filter(
+#             code_muni == 4300001 |
+#             code_muni == 4300002
+#           ) %>% 
+#           st_transform(crs = 31982)
+#   ) %>% 
+  arrange(code_muni)
+
+corpos_hidricos <- st_read(
+  "./info_geoespaciais/corpos_hidricos_rs_31982.gpkg"
+) %>% 
+  janitor::clean_names()
+
+# test <- read_municipality() %>%
+#   filter(abbrev_state == "RS") %>%
+#   as("sf") %>%
+#   filter(code_muni == 4300002)
+# 
+#   filter(
+#     name_muni == "Alvorada" |
+#       name_muni == "Araricá" |
+#       name_muni == "Balneário Pinhal" |
+#       name_muni == "Barra do Ribeiro" |
+#       name_muni == "Cachoeirinha" |
+#       name_muni == "Canoas" |
+#       name_muni == "Caraá" |
+#       name_muni == "Campo Bom" |
+#       name_muni == "Capela De Santana" |
+#       name_muni == "Capão da Canoa" |
+#       name_muni == "Capivari Do Sul" |
+#       name_muni == "Charqueadas" |
+#       name_muni == "Cidreira" |
+#       name_muni == "Eldorado Do Sul" |
+#       name_muni == "Esteio" |
+#       name_muni == "Gravataí" |
+#       name_muni == "Glorinha" |
+#       name_muni == "Guaíba" |
+#       name_muni == "Imbé" |
+#       name_muni == "Lagoa Dos Patos" |
+#       name_muni == "Montenegro" |
+#       name_muni == "Maquiné" |
+#       name_muni == "Nova Santa Rita" |
+#       name_muni == "Novo Hamburgo" |
+#       name_muni == "Osório" |
+#       name_muni == "Palmares Do Sul" |
+#       name_muni == "Parobé" |
+#       name_muni == "Portão" |
+#       name_muni == "Porto Alegre" |
+#       name_muni == "Rolante" |
+#       name_muni == "Santo Antônio Da Patrulha" |
+#       name_muni == "São Leopoldo" |
+#       name_muni == "Sapiranga" |
+#       name_muni == "Sapucaia Do Sul" |
+#       name_muni == "Taquara" |
+#       name_muni == "Tramandaí" |
+#       name_muni == "Triunfo" |
+#       name_muni == "Xangri-Lá" |
+#       name_muni == "Viamão"
+#   ) %>%
+#   st_transform(crs = 31982) #4326 = WGS84, 4674 = SIRGAS2000, 31982 = SIRGAS2000/UTM 22S
 
 BH_gravatai <- shapefile(
-  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/Bacia_Hidrografica.shp"
+  "./info_geoespaciais/Bacia_Hidrografica.shp"
 ) %>% 
   as("sf") %>% 
   st_transform(crs = 31982) %>% #4326 = WGS84, 4674 = SIRGAS2000, 31982 = SIRGAS2000/UTM 22S
@@ -4878,8 +4921,13 @@ BH_gravatai <- shapefile(
     # | nome == "Lago Guaíba"
   )
 
+macro_UG <- st_read(
+  "./info_geoespaciais/macro_UG_31982.gpkg"
+) %>% 
+  janitor::clean_names()
+
 ETEs_2013 <- st_read(
-  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/ETEs_2013_31982.gpkg"
+  "./info_geoespaciais/ETEs_2013_31982.gpkg"
 ) %>% 
   janitor::clean_names() %>% 
   mutate(
@@ -4887,7 +4935,7 @@ ETEs_2013 <- st_read(
   ) 
 
 ETEs_2019 <- st_read(
-  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/ETEs_2019_31982.gpkg"
+  "./info_geoespaciais/ETEs_2019_31982.gpkg"
 ) %>% 
   janitor::clean_names() %>% 
   mutate(
@@ -4895,24 +4943,24 @@ ETEs_2019 <- st_read(
   )
 
 rio_grav_pol <- shapefile(
-  "C:/Users/Léo/Desktop/TCC/dados_digeo_plano_bacia_grav/SIG/Enquadramento/Enquadramento_pol.shp"
+  "./info_geoespaciais/Enquadramento_pol.shp"
 ) %>% 
   as("sf") %>% 
   st_transform(crs = 31982)
 
 rio_grav_lin <- shapefile(
-  "C:/Users/Léo/Desktop/TCC/dados_digeo_plano_bacia_grav/SIG/Enquadramento/Enquadramento_lin.shp"
+  "./info_geoespaciais/Enquadramento_lin.shp"
 ) %>% 
   as("sf") %>% 
   st_transform(crs = 31982) #4326 = WGS84, 4674 = SIRGAS2000
 
 afluentes <- st_read(
-  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/afluentes_importantes_31982.gpkg"
+  "./info_geoespaciais/afluentes_importantes_31982.gpkg"
 ) %>% 
   janitor::clean_names()
 
 est_monit_BHG <- st_read(
-  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/est_monit_fepam_BHG_31982.gpkg"
+  "./info_geoespaciais/est_monit_fepam_BHG_31982.gpkg"
 ) %>% 
   janitor::clean_names() %>% 
   cbind(
@@ -4922,7 +4970,10 @@ est_monit_BHG <- st_read(
   dplyr::select(
     -latitude, -longitude
   ) %>% 
-  rename(longitude = X, latitude = Y) %>% 
+  rename(
+    longitude = X, 
+    latitude = Y
+  ) %>% 
   mutate_at("codigo", as.character)
 
 est_monit_BHG <- inner_join(
@@ -4945,7 +4996,7 @@ rio_grav_lin %>% glimpse()
 
 ```{r}
 balanco_qualiquant <- st_read(
-  "C:/Users/Léo/Desktop/TCC/TCC_github/TCC_gh/info_geoespaciais/balanco_qualiquant_snirh_31982.gpkg"
+  "./info_geoespaciais/balanco_qualiquant_snirh_31982.gpkg"
 ) 
 ```
 
@@ -5076,10 +5127,15 @@ ggplot()+
 (mapa_localizacao_est_BHG <- municipios_RS %>% 
    ggplot()+
    geom_sf(
-    data = municipios_RS %>% filter(code_muni == 4300002),
+    data = corpos_hidricos,
     color = "#5cacee",
     fill = "#5cacee",
   )+
+  #  geom_sf(
+  #   data = municipios_RS %>% filter(code_muni == 4300002),
+  #   color = "#5cacee",
+  #   fill = "#5cacee",
+  # )+
   geom_sf(
     data = municipios_RS,
     fill = "transparent"
@@ -5745,6 +5801,10 @@ set.seed(10) #better
 )
 ```
 
+```{r mapa com trechos}
+
+```
+
 
 ### salvando mapa
 ```{r salvando mapa localização estações}
@@ -5864,7 +5924,7 @@ mapa_interativo %>%
       "<b>Endereço: </b>", {endereco}, "<br>",
       "<b>Município: </b>", municipio, "<br>",
       "<b>Recurso hídrico: </b>", recurso_hidrico, "<br>",
-      "<b>Altitude: </b>", altitude, "<br>",
+      "<b>Altitude: </b>", altitude,"m", "<br>",
       "<b>Última coleta: </b>", tail(data_coleta, 1), "<br>",
       sep = " "
     )
